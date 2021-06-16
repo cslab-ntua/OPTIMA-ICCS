@@ -1,6 +1,4 @@
-LU lu(Matrix matrix){
-    int n = matrix.n;
-    float **A = matrix.matrix;
+void lu(float *matrix, int n, float *L, float *U){
 
     for (int i = 0; i < n; i++) { // Iterates over the columns to remove
         for(int j = i + 1; j < n; j++){
@@ -13,6 +11,5 @@ LU lu(Matrix matrix){
         }
     }
 
-    LU decomposition = split_lu(A, n);
-    return decomposition;
+    split_lu(A, n, L, U); //split re-formed A to L and U 
 }

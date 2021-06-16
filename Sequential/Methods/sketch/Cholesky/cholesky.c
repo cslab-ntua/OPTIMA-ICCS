@@ -1,7 +1,4 @@
-float ** cholSerial(float ** A, int n){
-	double ** L = initMatrix(n);
-	transCopy(A, L, n);
-	
+void cholesky(float ** A, int n, float **L){
 	int i,j,k;
 	for (j = 0; j < n; j++){
 		
@@ -18,6 +15,5 @@ float ** cholSerial(float ** A, int n){
 			L[i][j] = L[i][j]/ L[j][j];
 		}
 	}
-	
 	return L;
 }
