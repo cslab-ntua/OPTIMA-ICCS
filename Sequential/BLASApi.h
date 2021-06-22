@@ -6,11 +6,13 @@
 //N (int)~> number of elements in input vector 
 //X (float) ~> is a float array 
 //incX (int) ~> storage spacing between elements of X
+//finds the index of the first element having maximum absolute value.
 int OOPS_iamax(const int N, const float  *X, const int incX);
 
 //N (int)~> number of elements in input vector 
 //X (float) ~> is a float array
 //incX (integer) ~> storage spacing between elements of X
+//takes the sum of the absolute values.
 float OOPS_asum(const int N, const float *X, const int incX);
 
 
@@ -30,18 +32,21 @@ void OOPS_copy( const int N, const float *X, const int incX, float *Y, const int
 //N (int)~> number of elements in input vector 
 //X (float) ~> a float array (input) , Y (float) ~> a float array (input) 
 //incX (int) ~> storage spacing between elements of X, incY (int) ~> storage spacing between elements of Y
+//forms the dot product of two vectors.
 float OOPS_dot( const int N, const float *X, const int incX, const float *Y, const int incY);
 
 //N (int)~> number of elements in input vector 
 //X (float) ~> a float array (input) , Y (float) ~> a float array (input) 
 //alpha (float)~> specifies the scalar alpha 
 //incX (int) ~> storage spacing between elements of X, incY(int) ~> storage spacing between elements of Y
+//computes the inner product of two vectors with extended precision accumulation
 float OOPS_ddot( const int N, const float alpha, const float *X, const int incX, const float *Y, const int incY);
 
 
 //N (int)~> number of elements in input vector 
 //X (float) ~> is a float array
 //incX (int) ~> storage spacing between elements of X
+//returns the euclidean norm of a vector via the function
 float OOPs_nrm2( const int N, const float *X, const int incX)
 
 
