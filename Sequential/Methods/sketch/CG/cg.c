@@ -1,6 +1,6 @@
-int precond_cg(double **Adata, double *b, double *x, double rtol, int n, int maxiter, int *niters)
+int precond_cg(float **Adata, float *b, float *x, double rtol, int n, int maxiter, int *niters)
 {
-    const int nbytes = n * sizeof(double);
+    const int nbytes = n * sizeof(float);
 
     double bnorm2;              /* ||b||^2 */
     double rnorm2;              /* Νόρμα υπολοίπου στο τετράγωνο */
@@ -8,15 +8,15 @@ int precond_cg(double **Adata, double *b, double *x, double rtol, int n, int max
     double alpha, beta;
     double rz_local,rnorm2_local,bnorm2_local;
 
-    double *s;                  /* Κατεύθυνση αναζήτησης */
-    double *r;                  /* Υπόλοιπο         */
-    double *z;                  /* Προσωρινό διάνυσμα */
+    float *s;                  /* Κατεύθυνση αναζήτησης */
+    float *r;                  /* Υπόλοιπο         */
+    float *z;                  /* Προσωρινό διάνυσμα */
 
     int i = 0,j;                /* Τρέχουσα επανάληψη */
 
-    s = (double *) malloc(nbytes);
-    r = (double *) malloc(nbytes);
-    z = (double *) malloc(nbytes);
+    s = (float *) malloc(nbytes);
+    r = (float *) malloc(nbytes);
+    z = (float *) malloc(nbytes);
 
  
     bnorm2    = ddot(b, b, n);
@@ -24,8 +24,8 @@ int precond_cg(double **Adata, double *b, double *x, double rtol, int n, int max
     memset(x, 0, nbytes);	//αρχικοποίηση λύσης
     memcpy(r, b, nbytes);	//και υπολοίπου - r0=b-A*x0 (x0=0)
 
-    jacobi_matrix(Mdata, Adata, n);
-    jacobi_precond(z, Mdata, r, n);	//εφαρμογή του preconditioner - z0 = (M στην -1)*r0
+    jacobi_matrix(Adata, n, Mdata);
+    jacobi_precond(Mdata, r, n, z);	//εφαρμογή του preconditioner - z0 = (M στην -1)*r0
 
     memcpy(s, z, nbytes);	//αρχικοποίηση κατεύθυνσης αναζήτησης	- p0 = z0
 
@@ -45,7 +45,7 @@ int precond_cg(double **Adata, double *b, double *x, double rtol, int n, int max
         axpy(x, alpha, s, x, n);	//xk+1 = xk + ak*pk
         axpy(r, -alpha, z, r, n);	//rk+1 = rk - ak*A*pk
   
-        jacobi_precond(z, Mdata, r, n);		//zk+1 = (M στην -1)*rk+1
+        jacobi_precond(Mdata, r, n, z);		//zk+1 = (M στην -1)*rk+1
 
         rzold = rz;
         
@@ -70,3 +70,6 @@ int precond_cg(double **Adata, double *b, double *x, double rtol, int n, int max
 
     *niters = i;
 }
+
+//check also
+//https://juliahub.com/docs/Krylov/0fcC3/0.5.5/solvers/

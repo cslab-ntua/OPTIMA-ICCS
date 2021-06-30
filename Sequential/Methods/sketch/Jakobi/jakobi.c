@@ -1,4 +1,4 @@
-void jacobi_matrix(double *M, double **Adata, int n)
+void jacobi_matrix(float **Adata, int n, float *Mdata)
 {
     int i;		
     
@@ -7,11 +7,11 @@ void jacobi_matrix(double *M, double **Adata, int n)
     }
 }
 
-void jakobi_precond(double *Minvx, double *Mdata, double *x, int n)
+void jakobi_precond(float *Mdata, float *x, int n, float *Minvx)
 {
     int i;		
     
     for(i=0; i<n; i++){
-	Minvx[i] = 1/Mdata[i]*x[i];
+	    Minvx[i] = 1/Mdata[i]*x[i];
     }
 }

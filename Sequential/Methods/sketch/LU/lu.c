@@ -1,4 +1,4 @@
-void lu(float *matrix, int n, float *L, float *U){
+void lu(float **A, int n, float **L, float **U){
 
     for (int i = 0; i < n; i++) { // Iterates over the columns to remove
         for(int j = i + 1; j < n; j++){
