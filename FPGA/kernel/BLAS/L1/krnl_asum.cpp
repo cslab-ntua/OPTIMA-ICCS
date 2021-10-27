@@ -9,26 +9,25 @@ mem_rd:
     }
 }
 
-static float asum(hls::stream< float>& Xin,const int N) {
-    float result=0;
+static float asum(hls::stream< float>& Xin, int N) {
+	float ret=0;
+	float item;
 execute:
     for (int i = 0; i < N; i++) {
 	#pragma HLS pipeline II=1
-        float item= Yin.read()
-        if(item<0){
-    	result=result -item;
+        item=Xin.read();
+        if (item<0){
+        	ret=ret-item;
         }
         else{
-           result=result +item; 
+        	ret=ret+item;
         }
     }
-    return result;
+    return ret;
 }
 
-
 extern "C" {
-void krnl_asum(const int N,const float* X,const int incx, float* result) {
-
+void krnl_asum(int N,float* X,int incx,float* result) {
 #pragma HLS INTERFACE m_axi port = X offset = slave bundle = ddr0
 
 #pragma HLS INTERFACE s_axilite port = N
@@ -41,7 +40,9 @@ void krnl_asum(const int N,const float* X,const int incx, float* result) {
 
 #pragma HLS dataflow
 
-    read_vector(X, Xin, N,incx);
-    *result =asum(Xin,N);
+		read_vector(X, Xin, N,incx);
+	    *result=asum(Xin,N);
+
+
 }
 }
