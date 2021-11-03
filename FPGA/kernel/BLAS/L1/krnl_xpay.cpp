@@ -19,17 +19,17 @@ int index=0;
     }
 }
 
-static void axpy(hls::stream< float>& Xin, hls::stream< float>& Yin,hls::stream< float>& Yout, int N, float SA) {
+static void xpay(hls::stream< float>& Xin, hls::stream< float>& Yin,hls::stream< float>& Yout, int N, float SA) {
 execute:
     for (int i = 0; i < N; i++) {
 	#pragma HLS pipeline II=1
-    	Yout << (Yin.read()+SA*Xin.read());
+    	Yout << ((SA*Yin.read())+Xin.read());
     }
 }
 
 
 extern "C" {
-void krnl_axpy(int N,float* X,int incx,  float* Y, int incy, float SA) {
+void krnl_xpay(const int N,const float* X,const int incx,  float* Y,const int incy,const float SA) {
 
 #pragma HLS INTERFACE m_axi port = X offset = slave bundle = ddr0
 #pragma HLS INTERFACE m_axi port = Y offset = slave bundle = ddr1

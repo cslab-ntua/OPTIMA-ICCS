@@ -9,25 +9,27 @@ mem_rd:
     }
 }
 
-static float iamax(hls::stream< float>& Xin,const int N) {
-   float max=Yin.read();
-   float i_max=0;
+static int iamax(hls::stream< float>& Xin, int N) {
+	float max=Xin.read();
+	int i_max=0;
+	float item;
 execute:
     for (int i = 1; i < N; i++) {
 	#pragma HLS pipeline II=1
-        item=Yin.read()
+        item=Xin.read();
+        if(item<0){
+        	item=-item;
+        }
         if (item>max){
-    	 max=item;
-         i_max=i;
+        	max=item;
+        	i_max=i;
         }
     }
     return i_max;
 }
 
-
 extern "C" {
-void krnl_iamax(const int N,const float* X,const int incx, float* result) {
-
+void krnl_iamax(int N,float* X,int incx,int* result) {
 #pragma HLS INTERFACE m_axi port = X offset = slave bundle = ddr0
 
 #pragma HLS INTERFACE s_axilite port = N
@@ -40,7 +42,9 @@ void krnl_iamax(const int N,const float* X,const int incx, float* result) {
 
 #pragma HLS dataflow
 
-    read_vector(X, Xin, N,incx);
-    *result =iamax(Xin,N);
+		read_vector(X, Xin, N,incx);
+	    *result=iamax(Xin,N);
+
+
 }
 }

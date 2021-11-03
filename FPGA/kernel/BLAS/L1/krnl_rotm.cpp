@@ -18,10 +18,14 @@ int index=0;
         index=index+incy;
     }
 }
-static void rotm (hls::stream< float>& Xin, hls::stream< float>& Yin,hls::stream< float>& Xout,hls::stream< float>& Yout, int N, float* P) {
+static void rotm (hls::stream< float>& Xin, hls::stream< float>& Yin,hls::stream< float>& Xout,hls::stream< float>& Yout, int N, float* P ) {
 
 execute:
 float sh[2][2];
+	sh[1][1]=P[1];
+	sh[1][2]=1;
+	sh[2][1]=-1;
+	sh[2][2]=P[4];
 	if(P[0]==-1){
 		sh[1][1]=P[1];
 		sh[1][2]=P[3];
@@ -29,18 +33,12 @@ float sh[2][2];
 		sh[2][2]=P[4];
 	}
 	else if(P[0]==0){
-		sh[1][1]=1;
-		sh[1][2]=P[3];
-		sh[2][1]=P[2];
-		sh[2][2]=1;
+			sh[1][1]=P[1];
+			sh[1][2]=P[3];
+			sh[2][1]=P[2];
+			sh[2][2]=1;
 	}
-	else if (P[0]==1){
-		sh[1][1]=P[1];
-		sh[1][2]=1;
-		sh[2][1]=-1;
-		sh[2][2]=P[4];
-	}
-#pragma HLS array_partition variable=P block factor=5
+#pragma HLS array_partition variable=sh block factor=5
     for (int i = 0; i < N; i++) {
 	#pragma HLS pipeline II=1
     	Xout << (sh[1][1]*Xin.read()+sh[1][2]*Yin.read());
@@ -54,12 +52,11 @@ void krnl_rotm(int N,float* X,int incx,  float* Y, int incy, float* P) {
 
 #pragma HLS INTERFACE m_axi port = X offset = slave bundle = ddr0
 #pragma HLS INTERFACE m_axi port = Y offset = slave bundle = ddr1
-#pragma HLS INTERFACE m_axi port = P offset = slave bundle = params
+#pragma HLS INTERFACE m_axi port = P offset = slave bundle = ddr2
 
 #pragma HLS INTERFACE s_axilite port = N
 #pragma HLS INTERFACE s_axilite port = incx
 #pragma HLS INTERFACE s_axilite port = incy
-
 
 
 
