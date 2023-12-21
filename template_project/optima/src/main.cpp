@@ -5,6 +5,7 @@
 #include <iomanip> // to use setw and setprecision
 
 #include "oops.hpp"
+#include "matrix_vector_generation.hpp"
 #include "test_function.h"
 
 using namespace std;

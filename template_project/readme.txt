@@ -33,5 +33,5 @@ what needs to change for testing other kernels: nothing (fix "other configuratio
 
 
 * other configuration files *
-config_CU<num_of_CUs>_<platform>.cfg files: connectivity between kernel ports and memory banks, different for each Compute Unit and platform configuration 
-krnl_<kernel_name>_<platform>.cfg and package_<platform>.cfg: change kernel names and platform used in these files
+krnl_<kernel_name>-compile_<platform>.cfg and package_<platform>.cfg: change kernel names and platform used in these files
+krnl_<kernel_name>-config_CU<num_of_CUs>_<platform>.cfg files: connectivity between kernel ports and memory banks, different for each Compute Unit and platform configuration 
