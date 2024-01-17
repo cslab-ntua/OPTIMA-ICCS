@@ -1,7 +1,7 @@
 float OOPS_nrm2(const int N, const int NCU, const int MAX_CUS, const float *X, const int incX){
 			cl_int err;
 			std::string cu_id;
-			std::string krnl_name = "krnl_dot"; // OOPS_nrm2 uses dot kernel and processes the returned results differently
+			std::string krnl_name = "krnl_nrm2"; // OOPS_nrm2 uses nrm2 kernel and processes the returned results differently
 			std::vector<cl::Kernel> krnl(NCU);
 
 
@@ -18,7 +18,7 @@ float OOPS_nrm2(const int N, const int NCU, const int MAX_CUS, const float *X, c
 
 			for (int i = 0; i < NCU; i++) {
 								cu_id = std::to_string(i+1);
-								std::string krnl_name_full = krnl_name + ":{" + "krnl_dot_" + cu_id + "}";
+								std::string krnl_name_full = krnl_name + ":{" + "krnl_nrm2_" + cu_id + "}";
 								printf("Creating a kernel [%s] for CU(%d)\n", krnl_name_full.c_str(), i);
 								// Here Kernel object is created by specifying kernel name along with
 								// compute unit.

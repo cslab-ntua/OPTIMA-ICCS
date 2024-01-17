@@ -1,4 +1,4 @@
-void dot(hls::stream< v_dt>& Xin, hls::stream< v_dt>& Yin, int N,float* result) {
+void ddot(hls::stream< v_dt>& Xin, hls::stream< v_dt>& Yin, int N,float* result) {
 	unsigned int vSize = ((N - 1) / VDATA_SIZE) + 1;
 
 	v_dt Xtemp;
@@ -38,7 +38,7 @@ void dot(hls::stream< v_dt>& Xin, hls::stream< v_dt>& Yin, int N,float* result) 
 }
 
 extern "C" {
-void krnl_dot(const int N,v_dt* X,const int incx,  v_dt* Y, const int incy,float* result) {
+void krnl_ddot(const int N,v_dt* X,const int incx,  v_dt* Y, const int incy,float* result) {
 	#pragma HLS INTERFACE m_axi port = X offset = slave bundle = hbm0
 	#pragma HLS INTERFACE m_axi port = Y offset = slave bundle = hbm1
 	#pragma HLS INTERFACE m_axi port = result offset = slave bundle = hbm2
@@ -56,7 +56,7 @@ void krnl_dot(const int N,v_dt* X,const int incx,  v_dt* Y, const int incy,float
 
 		read_vector_wide((v_dt*)X, Xin, N,incx);
         read_vector_wide((v_dt*)Y, Yin, N,incy);
-	    dot(Xin,Yin,N,result);
+	    ddot(Xin,Yin,N,result);
 
 
 }
