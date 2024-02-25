@@ -1,12 +1,10 @@
 #include <chrono>
 #include <stdio.h>
 #include <stdlib.h>
-#include <fstream> // to use i/ofstream
-#include <iomanip> // to use setw and setprecision
 
 #include "oops.hpp"
 #include "matrix_vector_generation.hpp"
-#include "test_function.h"
+#include "test_functions_set.h"
 
 using namespace std;
 

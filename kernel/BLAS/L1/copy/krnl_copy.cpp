@@ -1,3 +1,6 @@
+#include "global.hpp"
+#include "common.hpp"
+
 extern "C" {
 void krnl_copy(const int N, v_dt* X,const int incX,  v_dt* Y, const int incY) { //for incX and incY = 1 at the moment
 

@@ -1,3 +1,9 @@
+#include <stdio.h>
+#include <hls_stream.h>
+#include "ap_int.h"
+#include "global.hpp"
+#include "common.hpp"
+
 void write_vector_wide_axpy(v_dt* out, hls::stream<v_dt>& Xtemp, hls::stream<v_dt>& Ytemp ,const int N,const int incy,const float alpha) {
 	v_dt X;
 	v_dt Y;

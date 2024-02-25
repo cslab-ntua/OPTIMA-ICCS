@@ -1,4 +1,24 @@
-void main_copy(){
+#include <chrono>
+#include <stdio.h>
+#include <stdlib.h>
+#include <fstream> // to use i/ofstream
+
+#include "oops.hpp"
+#include "matrix_vector_generation.hpp"
+#include "test_functions_set.h"
+
+using namespace std;
+int main(int argc, const char** argv)
+{
+    if (argc != 2) {
+        std::cout << "Usage: " << argv[0] << " <XCLBIN File>" << std::endl;
+        return EXIT_FAILURE;
+    }
+    
+    printf("----------------------------------------------------------------------------------------------------------------------------------------\n");
+	printf("\n(0) Program the device\n");
+	program_device(argv[1]);
+
 	
 	int incX=1, incY=1;
 	int N=2048;
@@ -17,8 +37,6 @@ void main_copy(){
 	for(int i=0;i<N;i++){
 		Y_sw[i] = X[i];
 	}
-
-   
 
     OOPS_copy( N, NCU, MAX_CUS, X, incX, Y, incY);
 	
@@ -39,6 +57,18 @@ void main_copy(){
    	free(X);
    	free(Y);
    	free(Y_sw);
+
+	//-------------------------------------------------------------------------------------
+	printf("\n(5) Close OpenCL objects\n");
+	clReleaseProgram(program_interface.program.get());
+	clReleaseContext(program_interface.context.get());
+	clReleaseCommandQueue(program_interface.q.get());
+
+	//-------------------------------------------------------------------------------------
+
+	// End
+	printf("\n");
+    return 0;
 
 
 }
