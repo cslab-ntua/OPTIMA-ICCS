@@ -1,4 +1,26 @@
-void main_axpy(){
+#include <chrono>
+#include <stdio.h>
+#include <stdlib.h>
+#include <fstream> // to use i/ofstream
+#include <iomanip> // to use setw and setprecision
+
+#include "oops.hpp"
+#include "matrix_vector_generation.hpp"
+#include "test_function.h"
+
+using namespace std;
+
+int main(int argc, const char** argv)
+{
+    if (argc != 2) {
+        std::cout << "Usage: " << argv[0] << " <XCLBIN File>" << std::endl;
+        return EXIT_FAILURE;
+    }
+    
+    printf("----------------------------------------------------------------------------------------------------------------------------------------\n");
+	printf("\n(0) Program the device\n");
+	program_device(argv[1]);
+
 	int N=2048;
 	int NCU = 2; // 1, 2, 4, 8, 12, 16
 	int MAX_CUS = 16;
@@ -39,5 +61,18 @@ void main_axpy(){
     free(X);
     free(Y);
     free(Y_sw);
+
+    //-------------------------------------------------------------------------------------
+	printf("\n(5) Close OpenCL objects\n");
+	clReleaseProgram(program_interface.program.get());
+	clReleaseContext(program_interface.context.get());
+	clReleaseCommandQueue(program_interface.q.get());
+
+	//-------------------------------------------------------------------------------------
+
+	// End
+	printf("\n");
+
+    return 0;
 
 }

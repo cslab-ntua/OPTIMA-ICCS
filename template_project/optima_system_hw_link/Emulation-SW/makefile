@@ -4,10 +4,12 @@ RMDIR = rm -rf
 
 VPP_OPTS = --target sw_emu
 
-BINARY_CONTAINERS += binary_container_1.xclbin
+# BINARY_CONTAINERS += binary_container_1.xclbin
+BINARY_CONTAINERS += ${BIN_CONT_NAME}.xclbin
 
-BUILD_SUBDIRS += binary_container_1.build
-BINARY_CONTAINER_1_OBJS += ../../$(PROJECT_NAME)_kernels/$(TARGET)/build/krnl_gemm.xo
+# BUILD_SUBDIRS += binary_container_1.build
+BUILD_SUBDIRS += ${BIN_CONT_NAME}.build
+BINARY_CONTAINER_1_OBJS += ../../$(PROJECT_NAME)_kernels/$(TARGET)/build/$(KRNL_NAME).xo
 
 ALL_MESSAGE_FILES = $(subst .xclbin,.mdb,$(BINARY_CONTAINERS))
 
@@ -27,6 +29,6 @@ incremental: all
 
 nothing:
 
-binary_container_1.xclbin: $(BINARY_CONTAINER_1_OBJS) ../../config_CU$(CU)_$(VITIS_PLATFORM).cfg
-	-@echo $(VPP_LINKER) $(VPP_OPTS) --link --config $(word 2,$^) -o"$@" $(BINARY_CONTAINER_1_OBJS) > binary_container_1.xclbin.sh
+${BIN_CONT_NAME}.xclbin: $(BINARY_CONTAINER_1_OBJS) ../../config_files/$(KRNL_LINK_CFG)
+	-@echo $(VPP_LINKER) $(VPP_OPTS) --link --config $(word 2,$^) -o"$@" $(BINARY_CONTAINER_1_OBJS) > ${BIN_CONT_NAME}.xclbin.sh
 	$(VPP_LINKER) $(VPP_OPTS) --link --config $(word 2,$^) -o"$@" $(BINARY_CONTAINER_1_OBJS)

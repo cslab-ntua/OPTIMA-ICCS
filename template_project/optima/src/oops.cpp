@@ -29,8 +29,8 @@ void program_device(const char *arg1)
        auto device = devices[i];
        // int res = device.getInfo<CL_DEVICE_NAME>().compare("xilinx_u280_xdma_201920_3");
        // int res = device.getInfo<CL_DEVICE_NAME>().compare("xilinx_u55c_gen3x16_xdma_base_3");
-       int res = device.getInfo<CL_DEVICE_NAME>().compare("xilinx_u55c_gen3x16_xdma_3_202210_1");
-       if(res==0){
+      //  int res = device.getInfo<CL_DEVICE_NAME>().compare("xilinx_u55c_gen3x16_xdma_3_202210_1");
+      //  if(res==0){
          // Creating Context and Command Queue for selected Device
          OCL_CHECK(err, program_interface.context = cl::Context(device, nullptr, nullptr, nullptr, &err));
          OCL_CHECK(err, program_interface.q = cl::CommandQueue(program_interface.context, device,
@@ -46,7 +46,7 @@ void program_device(const char *arg1)
             valid_device = true;
             break; // we break because we found a valid device
          }
-       }
+      //  }
    }
 
    if (!valid_device) {

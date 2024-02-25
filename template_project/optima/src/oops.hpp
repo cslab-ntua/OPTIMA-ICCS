@@ -1,6 +1,11 @@
 #pragma once 
 
 #include "xcl2.hpp"
+#include <chrono>
+#include <stdio.h>
+#include <stdlib.h>
+#include <fstream> // to use i/ofstream
+#include <iomanip> // to use setw and setprecision
 
 //----------------------------------------------------------------------------------------
 

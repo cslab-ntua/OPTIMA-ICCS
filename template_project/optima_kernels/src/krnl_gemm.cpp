@@ -1,5 +1,9 @@
+// #include "../../include/global.hpp"
+// #include "../../include/common.hpp"
 #include <stdio.h>
 #include <hls_stream.h>
+// #include <ap_int.h>
+#include <hls_math.h>
 #include "ap_int.h"
 
 typedef float ValueType;
@@ -283,7 +287,7 @@ extern "C" {
 // (int M,     int K,   int N, 
 // ValueType alpha, ValueType beta,
 // ValueType *A, v_dt *B, v_dt *C_in, v_dt *C_out)
-void krnl_gemm(const int Layout, const int transa, const int transb,
+void krnl_gemm(const char TransA, const char TransB,
 	const int M, const int N, const int K, 
 	const ValueType alpha, const ValueType *A, const int lda, 
 	const v_dt *B, const int ldb, 
@@ -295,8 +299,8 @@ void krnl_gemm(const int Layout, const int transa, const int transb,
 	#pragma HLS INTERFACE m_axi port = C_out offset = slave bundle = gmem3
 
 	#pragma HLS INTERFACE s_axilite port = Layout
-	#pragma HLS INTERFACE s_axilite port = transa
-	#pragma HLS INTERFACE s_axilite port = transb
+	#pragma HLS INTERFACE s_axilite port = TransA
+	#pragma HLS INTERFACE s_axilite port = TransB
 	#pragma HLS INTERFACE s_axilite port = M
 	#pragma HLS INTERFACE s_axilite port = N
 	#pragma HLS INTERFACE s_axilite port = K
@@ -333,22 +337,6 @@ void krnl_gemm(const int Layout, const int transa, const int transb,
 	#pragma HLS STREAM variable = B_Stream[4]    depth = 256
 	#pragma HLS STREAM variable = C_Stream[4]    depth = 256
 
-	// #pragma HLS STREAM variable = A_Stream[5]    depth = 256
-	// #pragma HLS STREAM variable = B_Stream[5]    depth = 256
-	// #pragma HLS STREAM variable = C_Stream[5]    depth = 256
-
-	// #pragma HLS STREAM variable = A_Stream[6]    depth = 256
-	// #pragma HLS STREAM variable = B_Stream[6]    depth = 256
-	// #pragma HLS STREAM variable = C_Stream[6]    depth = 256
-
-	// #pragma HLS STREAM variable = A_Stream[7]    depth = 256
-	// #pragma HLS STREAM variable = B_Stream[7]    depth = 256
-	// #pragma HLS STREAM variable = C_Stream[7]    depth = 256
-
-	// #pragma HLS STREAM variable = A_Stream[8]    depth = 256
-	// #pragma HLS STREAM variable = B_Stream[8]    depth = 256
-	// #pragma HLS STREAM variable = C_Stream[8]    depth = 256
-
 	#ifndef __SYNTHESIS__
 	if( M % D != 0){
 		printf("M mod D != 0 ! ABORT\n");
@@ -369,10 +357,6 @@ void krnl_gemm(const int Layout, const int transa, const int transb,
 	computation_part(A_Stream[1], A_Stream[2],    B_Stream[1], B_Stream[2],    C_Stream[1], C_Stream[2],    M,K,N,    alpha, beta,   1);
 	computation_part(A_Stream[2], A_Stream[3],    B_Stream[2], B_Stream[3],    C_Stream[2], C_Stream[3],    M,K,N,    alpha, beta,   2);
 	computation_part(A_Stream[3], A_Stream[4],    B_Stream[3], B_Stream[4],    C_Stream[3], C_Stream[4],    M,K,N,    alpha, beta,   3);
-	// computation_part(A_Stream[4], A_Stream[5],    B_Stream[4], B_Stream[5],    C_Stream[4], C_Stream[5],    M,K,N,    alpha, beta,   4);
-	// computation_part(A_Stream[5], A_Stream[6],    B_Stream[5], B_Stream[6],    C_Stream[5], C_Stream[6],    M,K,N,    alpha, beta,   5);
-	// computation_part(A_Stream[6], A_Stream[7],    B_Stream[6], B_Stream[7],    C_Stream[6], C_Stream[7],    M,K,N,    alpha, beta,   6);
-	// computation_part(A_Stream[7], A_Stream[8],    B_Stream[7], B_Stream[8],    C_Stream[7], C_Stream[8],    M,K,N,    alpha, beta,   7);
 
 	write_C_out(C_Stream[D], C_Stream_in, C_out, M, N, alpha, beta);
 }

@@ -6,12 +6,12 @@ VPP ?= ${XILINX_VITIS}/bin/v++
 all: package
 
 package:
-	-@echo $(VPP) --package --config ../../package_$(VITIS_PLATFORM).cfg ../../$(PROJECT_NAME)_system_hw_link/$(TARGET)/binary_container_1.xclbin -o binary_container_1.xclbin
-	-@$(VPP) --package --config ../../package_$(VITIS_PLATFORM).cfg ../../$(PROJECT_NAME)_system_hw_link/$(TARGET)/binary_container_1.xclbin -o binary_container_1.xclbin
-	cp -f binary_container_1.xclbin ../../$(PROJECT_NAME)/$(TARGET)/binary_container_1_CU$(CU).xclbin
+	-@echo $(VPP) --package --config ../../package_$(VITIS_PLATFORM).cfg ../../$(PROJECT_NAME)_system_hw_link/$(TARGET)/${BIN_CONT_NAME}.xclbin -o ${BIN_CONT_NAME}.xclbin
+	-@$(VPP) --package --config ../../package_$(VITIS_PLATFORM).cfg ../../$(PROJECT_NAME)_system_hw_link/$(TARGET)/${BIN_CONT_NAME}.xclbin -o ${BIN_CONT_NAME}.xclbin
+	cp -f ${BIN_CONT_NAME}.xclbin ../../$(PROJECT_NAME)/$(TARGET)/${BIN_CONT_NAME}_CU$(CU).xclbin
 
 clean:
 	$(RMDIR) ./package.build
-	${RMDIR} .Xil package *.log *.package_summary binary_container_1.xclbin
+	${RMDIR} .Xil package *.log *.package_summary ${BIN_CONT_NAME}.xclbin
 
 .PHONY: all package clean

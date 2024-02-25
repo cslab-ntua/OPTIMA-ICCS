@@ -31,7 +31,7 @@ incremental: all
 
 nothing:
 
-src/main.o: ../src/main.cpp ../src/oops.hpp ../src/matrix_vector_generation.hpp ../src/test_function.h
+src/main.o: ../src/main.cpp ../src/oops.hpp ../src/matrix_vector_generation.hpp ../src/test_functions_set.h
 	-@mkdir -p $(@D)
 	$(HOST_CXX) $(CXXFLAGS) -o "$@" "$<"
 
@@ -39,7 +39,7 @@ src/oops.o: ../src/oops.cpp ../src/oops.hpp
 	-@mkdir -p $(@D)
 	$(HOST_CXX) $(CXXFLAGS) -o "$@" "$<"
 
-src/test_function.o: ../src/test_function.cpp ../src/test_function.h ../src/oops.hpp
+src/test_function.o: ../src/test_function.cpp ../src/test_functions_set.h ../src/oops.hpp
 	-@mkdir -p $(@D)
 	$(HOST_CXX) $(CXXFLAGS) -o "$@" "$<"
 

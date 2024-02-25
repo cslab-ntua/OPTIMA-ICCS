@@ -24,6 +24,14 @@ inline void vector_N(float *X,int N,int incX){
         x_index=x_index + incX;
     }
 }
+
+inline void std_vector_N(float *X,int N,int incX, float num){
+      int x_index=0;
+    for (int i = 0; i < N; i++) {
+        X[x_index] = num;
+        x_index=x_index + incX;
+    }
+}
 inline void banded_MxN_matrix(float *A,int rows,int columns,int KU, int KL){
     float *Atemp;
     Atemp= (float *)OOPS_malloc(sizeof(float)*rows*columns);

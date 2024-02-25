@@ -6,96 +6,63 @@
 
 #include "oops.hpp"
 #include "matrix_vector_generation.hpp"
-#include "test_function.h"
+#include "test_functions_set.h"
 
 using namespace std;
 
-int main(int argc, const char* argv[])
+int main(int argc, const char** argv)
 {
-	printf("----------------------------------------------------------------------------------------------------------------------------------------\n");
+    if (argc != 2) {
+        std::cout << "Usage: " << argv[0] << " <XCLBIN File>" << std::endl;
+        return EXIT_FAILURE;
+    }
+    
+    printf("----------------------------------------------------------------------------------------------------------------------------------------\n");
 	printf("\n(0) Program the device\n");
 	program_device(argv[1]);
 
-	//-------------------------------------------------------------------------------------
-	printf("\n(1) Read parameters\n");
-	int	 M  = atoi(argv[2]);
-	int	 K  = atoi(argv[3]);
-	int	 N  = atoi(argv[4]);
-	ValueType alpha = atof(argv[5]);
-	ValueType beta = atof(argv[6]);
+	int N=2048;
+	int NCU = 2; // 1, 2, 4, 8, 12, 16
+	int MAX_CUS = 16;
+	int incX=1, incY=1;
+    float* X;
+    float* Y;
+    float* Y_sw;
 
-	// read parameters
-	printf("- M = %10d\n",M);
-	printf("- K = %10d\n",K);
-	printf("- N = %10d\n",N);
-	printf("- alpha = %lf\n",alpha);
-	printf("- beta = %lf\n",beta);
+    X= (float *)OOPS_malloc(sizeof(float)*N*incX);
+    Y= (float *)OOPS_malloc(sizeof(float)*N*incY);
+    Y_sw= (float *)OOPS_malloc(sizeof(float)*N*incY);
 
-	//-------------------------------------------------------------------------------------
-	printf("\n(2) Generate matrices\n");
-	auto time_gen_start = std::chrono::high_resolution_clock::now();
+    vector_N(X,N,incX);
+    vector_N(Y,N,incY);
+    float alpha=((float) rand()) / (float) RAND_MAX;
 
-	ValueType* A = (ValueType*) OOPS_malloc( M * K * sizeof(ValueType) );
-	ValueType* B = (ValueType*) OOPS_malloc( K * N * sizeof(ValueType) );
-	ValueType* C_in = (ValueType*) OOPS_malloc( M * N * sizeof(ValueType) );
-	ValueType* C_out = (ValueType*) OOPS_malloc( M * N * sizeof(ValueType) );
+	//verify
+    for (int i=0;i<N;i++){
+        Y_sw[i]=Y[i]+alpha*X[i];
+    }
+   
+    OOPS_axpy( N, NCU , MAX_CUS, alpha, X, incX, Y, incY);
 
-	srand(14); // seed the random number generator
-	for (int i = 0; i < M; i++)
-		for (int j = 0; j < K; j++)
-			A[i * K + j] = (ValueType)rand() / RAND_MAX; // assign a random value between 0 and 1
-	for (int i = 0; i < K; i++)
-		for (int j = 0; j < N; j++)
-			B[i * N + j] = (ValueType)rand() / RAND_MAX; // assign a random value between 0 and 1 // WRONG
-	for (int i = 0; i < M; i++)
-		for (int j = 0; j < N; j++)
-			C_in[i * N + j] = (ValueType)rand() / RAND_MAX; // assign a random value between 0 and 1
+	//verify
+	int match = 0;
+    for(int i=0;i<N;i++){
+    	if(abs(Y_sw[i]-Y[i])>0.001){
+    		 std::cout << "Error: Result mismatch" << std::endl;
+    		 std::cout << "i = " << i << " CPU result = " << Y_sw[i] << " Device result = " << Y[i] << std::endl;
+    		 match = 1;
+    		 break;
+    	}
+    }
 
-	auto time_gen_end = std::chrono::high_resolution_clock::now();
-	auto time_gen = std::chrono::duration<double>(time_gen_end-time_gen_start);
-	printf("time gen [s]  = %15.6lf\n",time_gen.count());
+    std::cout << "TEST " << (match ? "FAILED" : "PASSED") << std::endl;
 
-	int Layout; // 0: CblasRowMajor, 1: CblasColMajor
-	Layout = 0; // Row-major
-	int transa, transb; // 0: CblasNoTrans, 1: CblasTrans, 2: CblasConjTrans
-	transa = 0; // CblasNoTrans
-	transb = 0; // CblasNoTrans
 
-	int lda, ldb, ldc; // leading dimensions of each array
-	if((Layout == 0) && (transa == 0))
-		lda = K;
-	else if((Layout == 1) && (transa == 0))
-		lda = M;
-	else if((Layout == 0) && ((transa == 1) || (transa == 2)))
-		lda = M;
-	else if((Layout == 1) && ((transa == 1) || (transa == 2)))
-		lda = K;
+    free(X);
+    free(Y);
+    free(Y_sw);
 
-	if((Layout == 0) && (transb == 0))
-		ldb = N;
-	else if((Layout == 1) && (transb == 0))
-		ldb = K;
-	else if((Layout == 0) && ((transb == 1) || (transb == 2)))
-		ldb = K;
-	else if((Layout == 1) && ((transb == 1) || (transb == 2)))
-		ldb = N;
-
-	if(Layout == 0)
-		ldc = N;
-	else if (Layout == 1)
-		ldc = M;
-
-	//-------------------------------------------------------------------------------------
-	printf("\n(3) Running test\n");
-	test_function(argv[1], Layout, transa, transb, M, N, K, alpha, A, lda, B, ldb, beta, C_in, C_out, ldc);
-	//-------------------------------------------------------------------------------------
-	printf("\n(4) Free memory\n");
-	free(A);
-	free(B);
-	free(C_in);
-	free(C_out);
-
-	//-------------------------------------------------------------------------------------
+    //-------------------------------------------------------------------------------------
 	printf("\n(5) Close OpenCL objects\n");
 	clReleaseProgram(program_interface.program.get());
 	clReleaseContext(program_interface.context.get());
@@ -105,5 +72,7 @@ int main(int argc, const char* argv[])
 
 	// End
 	printf("\n");
-	return 0;  
+
+    return 0;
+
 }
