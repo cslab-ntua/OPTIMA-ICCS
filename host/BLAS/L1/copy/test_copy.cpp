@@ -1,7 +1,7 @@
 #include "test_functions_set.h"
 
 
-OOPS_copy(const int N,const int NCU, const int MAX_CUS, float *X, const int incX, float *Y, const int incY){
+void OOPS_copy(const int N,const int NCU, const int MAX_CUS, float *X, const int incX, float *Y, const int incY){
 
 	cl_int err;
 	std::string cu_id;

@@ -78,13 +78,13 @@ if [[ BACKCUP ]]; then
     echo "Backing up old main.cpp test_function.cpp and test_fucntio.h files"
     mv main.cpp main.old.cpp
     mv test_function.cpp test_function.old.cpp
-    mv test_function.h test_function.old.h
+#     mv test_function.h test_function.old.h
 fi
 
 echo "Copying host files for $TARGET_KRNL kernel to $HOST_SRC_PATH"
 cp  ../../$HOST_REPO_PATH/main_$TARGET_KRNL.cpp ./main.cpp
 cp  ../../$HOST_REPO_PATH/test_$TARGET_KRNL.cpp ./test_function.cpp
-cp  ../../$HOST_REPO_PATH/test_$TARGET_KRNL.h ./test_function.h
+# cp  ../../$HOST_REPO_PATH/test_$TARGET_KRNL.h ./test_function.h
 cd ../../
 
 echo "Entering $KRNL_PRJ_PATH directory"
