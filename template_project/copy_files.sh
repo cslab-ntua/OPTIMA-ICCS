@@ -6,6 +6,7 @@ then
   exit 1
 fi
 
+BACKCUP=FALSE
 
 for i in "$@"; do
       case $i in
@@ -74,7 +75,7 @@ cd $HOST_SRC_PATH
 
 #optional back up the old host files
 # if [ $2 eq "-b" ]; then
-if [[ BACKCUP ]]; then
+if [[ "$BACKUP" == "TRUE" ]]; then
     echo "Backing up old main.cpp test_function.cpp and test_fucntio.h files"
     mv main.cpp main.old.cpp
     mv test_function.cpp test_function.old.cpp

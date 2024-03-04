@@ -1,4 +1,24 @@
-void main_dot(){
+#include <chrono>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "oops.hpp"
+#include "matrix_vector_generation.hpp"
+#include "test_functions_set.h"
+
+using namespace std;
+
+int main(int argc, const char** argv)
+{
+    if (argc != 2) {
+        std::cout << "Usage: " << argv[0] << " <XCLBIN File>" << std::endl;
+        return EXIT_FAILURE;
+    }
+    
+    printf("----------------------------------------------------------------------------------------------------------------------------------------\n");
+	printf("\n(0) Program the device\n");
+	program_device(argv[1]);
+
 
 	int incX=1, incY=1;
 	int N=2048;
@@ -9,7 +29,6 @@ void main_dot(){
 
     float sw_sum_of_mults = 0.0;
    	float hw_sum_of_mults;
-    double elapsed_krnl_time;
 
     X=(float*)OOPS_malloc(sizeof(float)*N*incX);
     Y=(float*)OOPS_malloc(sizeof(float)*N*incY);
@@ -43,6 +62,17 @@ void main_dot(){
    	free(Y);
 
 
-   	return tm;
+    //-------------------------------------------------------------------------------------
+	printf("\n(5) Close OpenCL objects\n");
+	clReleaseProgram(program_interface.program.get());
+	clReleaseContext(program_interface.context.get());
+	clReleaseCommandQueue(program_interface.q.get());
+
+	//-------------------------------------------------------------------------------------
+
+	// End
+	printf("\n");
+
+    return 0;
 
 }
