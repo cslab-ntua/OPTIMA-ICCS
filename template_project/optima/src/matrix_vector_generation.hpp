@@ -4,6 +4,9 @@
 #include <vector>
 #include <cmath>
 #include <unistd.h>
+
+const float FLAG[4] = {-1.0, 0.0, 1.0, -2.0};
+
 inline int max_(int num1, int num2)
 {
     return (num1 > num2 ) ? num1 : num2;
@@ -32,6 +35,54 @@ inline void std_vector_N(float *X,int N,int incX, float num){
         x_index=x_index + incX;
     }
 }
+
+inline void pls_std_vector_N(float *X,int N,int incX){
+      int x_index=0;
+    for (int i = 0; i < N; i++) {
+        X[x_index] = float(i);
+        x_index=x_index + incX;
+    }
+}
+
+inline void gen_rotm_param(float *fH){
+//	float flag[4] = {-1.0, 0.0, 1.0, -2.0};
+	srand(time(NULL));
+	float chosen_flag = FLAG[rand()%4]; //Choose randomly between the 4 values of the flag array
+	fH[0] = chosen_flag;
+	#ifdef DEBUG_MATR
+	std::cout << "Chosen flag is :" << chosen_flag << std::endl;
+	#endif
+	if(chosen_flag == 0.0)
+	{
+		fH[1] = 1.0;
+		fH[2] = ((float) rand()) / (float) RAND_MAX;
+		fH[3] = ((float) rand()) / (float) RAND_MAX;
+		fH[4] = 1.0;
+	}
+	else if(chosen_flag == 1.0)
+	{
+		fH[1] = ((float) rand()) / (float) RAND_MAX;
+		fH[2] = 1.0;
+		fH[3] = -1.0;
+		fH[4] = ((float) rand()) / (float) RAND_MAX;
+	}
+	else if(chosen_flag == -2.0)
+	{
+		fH[1] = 1.0;
+		fH[2] = 0.0;
+		fH[3] = 0.0;
+		fH[4] = 1.0;
+	}
+	else
+	{
+		fH[1] = ((float) rand()) / (float) RAND_MAX;
+		fH[2] = ((float) rand()) / (float) RAND_MAX;
+		fH[3] = ((float) rand()) / (float) RAND_MAX;
+		fH[4] = ((float) rand()) / (float) RAND_MAX;
+	}
+
+}
+
 inline void banded_MxN_matrix(float *A,int rows,int columns,int KU, int KL){
     float *Atemp;
     Atemp= (float *)OOPS_malloc(sizeof(float)*rows*columns);
