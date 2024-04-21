@@ -28,7 +28,6 @@ int main(int argc, const char** argv)
     int min_sw_idx = 0;
     int min_hw_idx = 0;
 
-    double elapsed_krnl_time;
 
     X=(float*)OOPS_malloc(sizeof(float)*N*incX);
 

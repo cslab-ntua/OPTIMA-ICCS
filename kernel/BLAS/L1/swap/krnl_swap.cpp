@@ -1,3 +1,9 @@
+#include <stdio.h>
+#include <hls_stream.h>
+#include "ap_int.h"
+#include "global.hpp"
+#include "common.hpp"
+
 extern "C" {
 void krnl_swap(const int N,v_dt* X,const int incx,  v_dt* Y, const int incy) {
 

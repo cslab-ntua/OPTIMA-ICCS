@@ -28,8 +28,6 @@ int main(int argc, const char** argv)
     int max_sw_idx = 0;
     int max_hw_idx = 0;
 
-    double elapsed_krnl_time;
-
     X=(float*)OOPS_malloc(sizeof(float)*N*incX);
     pls_std_vector_N(X,N,incX);
 

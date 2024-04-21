@@ -1,3 +1,9 @@
+#include <stdio.h>
+#include <hls_stream.h>
+#include "ap_int.h"
+#include "global.hpp"
+#include "common.hpp"
+
  void iamax(hls::stream< v_dt>& Xin,const  int N, int *result) {
 	v_dt temp;
 	int i_max[VDATA_SIZE];

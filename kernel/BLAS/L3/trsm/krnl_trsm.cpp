@@ -1,5 +1,5 @@
-// #include "../../include/global.hpp"
-// #include "../../include/common.hpp"
+// #include "global.hpp"
+// #include "common.hpp"
 #include <stdio.h>
 #include <hls_stream.h>
 // #include <ap_int.h>
@@ -10,7 +10,7 @@ typedef float ValueType;
 
 #define BRAM_SIZE 1792
 #define W 16
-
+#define __SYNTHESIS__
 typedef struct v_datatype { ValueType data[W]; } v_dt;
 
 void read_b(hls::stream<ValueType>& Bstream1, hls::stream<ValueType>& Bstream2, 

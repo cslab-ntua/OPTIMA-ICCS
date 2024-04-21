@@ -1,5 +1,5 @@
-// #include "../../include/global.hpp"
-// #include "../../include/common.hpp"
+// #include "global.hpp"
+// #include "common.hpp"
 #include <stdio.h>
 #include <hls_stream.h>
 // #include <ap_int.h>
@@ -12,6 +12,9 @@ typedef float ValueType;
 
 #define W 16
 #define TN 32
+
+#define __SYNTHESIS__
+
 
 typedef struct v_datatype { ValueType data[W]; } v_dt;
 

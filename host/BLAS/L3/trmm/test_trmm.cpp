@@ -1,3 +1,5 @@
+#include "test_functions_set.h"
+
 void OOPS_trmm(const char Side, const char Uplo, const  char TransA, const char Diag, const int M, const int N, const float alpha,
 				const float *A, const int lda, const float *B, const int ldb, float *C)
 {
@@ -22,7 +24,7 @@ void OOPS_trmm(const char Side, const char Uplo, const  char TransA, const char 
 		std::string cu_id = std::to_string(i + 1);
 		std::string krnl_name_full = krnl_name + ":{" + krnl_name +"_" + cu_id + "}";
 		printf("Creating a kernel [%s] for CU(%d)\n", krnl_name_full.c_str(), i);
-		OCL_CHECK(err, krnls[i] = cl::Kernel(program, krnl_name_full.c_str(), &err));
+		OCL_CHECK(err, krnls[i] = cl::Kernel(program_interface.program, krnl_name_full.c_str(), &err));
 	}
 
 	std::vector<int> stripe_ncols(nstripe);
@@ -74,9 +76,9 @@ void OOPS_trmm(const char Side, const char Uplo, const  char TransA, const char 
 		_C[i]= (float*) OOPS_malloc((size_t)(stripe_nterms_C[i]*sizeof(float)));
 		// printf("buffer_C[%d] %lf MB\n\n", i, stripe_nterms_C[i]*sizeof(float)/(1024*1024.0));
 
-		OCL_CHECK(err, buffer_A[i] = cl::Buffer(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,  stripe_nterms_A[i]*sizeof(float), _A[i], &err));
-		OCL_CHECK(err, buffer_B[i] = cl::Buffer(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,  stripe_nterms_B[i]*sizeof(float), _B[i], &err));
-		OCL_CHECK(err, buffer_C[i] = cl::Buffer(context, CL_MEM_USE_HOST_PTR | CL_MEM_WRITE_ONLY, stripe_nterms_C[i]*sizeof(float), _C[i], &err));
+		OCL_CHECK(err, buffer_A[i] = cl::Buffer(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,  stripe_nterms_A[i]*sizeof(float), _A[i], &err));
+		OCL_CHECK(err, buffer_B[i] = cl::Buffer(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,  stripe_nterms_B[i]*sizeof(float), _B[i], &err));
+		OCL_CHECK(err, buffer_C[i] = cl::Buffer(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_WRITE_ONLY, stripe_nterms_C[i]*sizeof(float), _C[i], &err));
 	}
 
 	// Set the Kernel Arguments
@@ -98,26 +100,26 @@ void OOPS_trmm(const char Side, const char Uplo, const  char TransA, const char 
 		OCL_CHECK(err, err = krnls[i].setArg(narg++,buffer_C[i]));
 		OCL_CHECK(err, err = krnls[i].setArg(narg++,ldb));
 
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({buffer_A[i],buffer_B[i]}, 0));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({buffer_A[i],buffer_B[i]}, 0));
 	}
-	q.finish();
+	program_interface.q.finish();
 	
 	// Launch the Kernel
 	for (int i = 0; i < nstripe; i++){
-		OCL_CHECK(err, err = q.enqueueTask(krnls[i]));
+		OCL_CHECK(err, err = program_interface.q.enqueueTask(krnls[i]));
 	}
-	q.finish();
+	program_interface.q.finish();
 
 	// Copy Result from Device Global Memory to Host Local Memory
 	for (int i = 0; i < nstripe; i++){
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({buffer_C[i]},1));
-		for(int ii=0; ii<K; ii++){
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({buffer_C[i]},1));
+		for(int ii=0; ii<M; ii++){
 			for(int jj=0; jj<stripe_ncols[i]; jj++){
 				C[ii*N + jj + stripe_col_offset[i]] = _C[i][ii*stripe_ncols[i] + jj];
 			}
 		}
 	}
-	q.finish();
+	program_interface.q.finish();
 
 	for (int i = 0; i < nstripe; i++){
 		clReleaseKernel(krnls[i].get());

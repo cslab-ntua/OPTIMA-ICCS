@@ -1,8 +1,26 @@
-main_tpsv(){
+#include <chrono>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "oops.hpp"
+#include "matrix_vector_generation.hpp"
+#include "test_functions_set.h"
+
+using namespace std;
+
+int main(int argc, const char** argv)
+{
+    if (argc != 2) {
+        std::cout << "Usage: " << argv[0] << " <XCLBIN File>" << std::endl;
+        return EXIT_FAILURE;
+    }
+    
+    printf("----------------------------------------------------------------------------------------------------------------------------------------\n");
+	printf("\n(0) Program the device\n");
+	program_device(argv[1]);
+	
 	int incX = 1;
-    int N = 2048
-	timeMeasurements tm;
-	double elapsed_krnl_time;
+    int N = 2048;
 
 	float *X;
 
@@ -14,9 +32,7 @@ main_tpsv(){
 	char Diag =  't';
 
 
-
 	uint32_t packedMatrixSize = calc_packed_matrix_usefull_data(N);
-
 
 
 	printf("packedMatrixSize %d \n",packedMatrixSize);
@@ -54,8 +70,6 @@ main_tpsv(){
 	}
 
 	//verify for lower case only
-	// Unoptimized software implementation of the tpsv algorithm
-	high_resolution_clock::time_point swStart = high_resolution_clock::now();
 	for(int i=0; i<N; i++){
 		float a = sw_results[i];
 		for(int j=0; j<i; j++){
@@ -64,23 +78,10 @@ main_tpsv(){
 		sw_results[i] = a;
 	}
 
-	high_resolution_clock::time_point swEnd = high_resolution_clock::now();
-	duration<double> swDuration = duration_cast<duration<double>>(swEnd - swStart);
-
-
-
-
 	convert_triangular_matrix_to_packed('U', ATrans, ATransPacked, N, packedMatrixSize);
 
-
-	high_resolution_clock::time_point hwStart = high_resolution_clock::now();
-
-	OOPS_tpsv_16cus('U', Diag, N, ATransPacked, packedMatrixSize, X, incX, &elapsed_krnl_time);
-	high_resolution_clock::time_point hwEnd = high_resolution_clock::now();
-
-	duration<double> hwDuration = duration_cast<duration<double>>(hwEnd - hwStart);
-
-
+	OOPS_tpsv('U', Diag, N, ATransPacked, packedMatrixSize, X, incX);
+	
 	uint8_t mismatch = 0;
 	float dif = 0.0;
 		for (int i = 0; i < N; i++) {
@@ -100,5 +101,18 @@ main_tpsv(){
 	free(ATrans);
 	free(ATransPacked);
 	free(sw_results);
+
+	//-------------------------------------S------------------------------------------------
+	printf("\n(5) Close OpenCL objects\n");
+	clReleaseProgram(program_interface.program.get());
+	clReleaseContext(program_interface.context.get());
+	clReleaseCommandQueue(program_interface.q.get());
+
+	//-------------------------------------------------------------------------------------
+
+	// End
+	printf("\n");
+
+    return 0;
 
 }

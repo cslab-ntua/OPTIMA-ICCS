@@ -1,3 +1,9 @@
+#include <stdio.h>
+#include <hls_stream.h>
+#include "ap_int.h"
+#include "global.hpp"
+#include "common.hpp"
+
 void write_vector_wide_scal(v_dt* out, hls::stream<v_dt>& outStream,const int N,const int incy,const float alpha) {
 
 mem_wr:

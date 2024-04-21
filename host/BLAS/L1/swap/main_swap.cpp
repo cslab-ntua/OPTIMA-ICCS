@@ -1,6 +1,24 @@
+#include <chrono>
+#include <stdio.h>
+#include <stdlib.h>
 
-timeMeasurements main_swap(){
-	timeMeasurements tm;
+#include "oops.hpp"
+#include "matrix_vector_generation.hpp"
+#include "test_functions_set.h"
+
+using namespace std;
+
+int main(int argc, const char** argv)
+{
+    if (argc != 2) {
+        std::cout << "Usage: " << argv[0] << " <XCLBIN File>" << std::endl;
+        return EXIT_FAILURE;
+    }
+    
+    printf("----------------------------------------------------------------------------------------------------------------------------------------\n");
+	printf("\n(0) Program the device\n");
+	program_device(argv[1]);
+	
 	int incX=1, incY=1;
 	int N = 2048;
 	int NCU = 2; // 1 2 4 8 16 32
@@ -32,10 +50,10 @@ OOPS_swap( N, NCU, MAX_CUS, X, incX, Y, incY);
 	int match = 0;
    	for (int i = 0; i < N; i++) {
    		if ( (abs(Y_sw[i]-Y[i])>0.001) || (abs(X_sw[i]-X[i])>0.001) ) {
-  			mismatchNum++;
+  			
   			std::cout << "Error: Result mismatch" << " i = " << i << " CPU res Y = " << Y_sw[i]
   	                      << " Device result Y = " << Y[i] << " CPU res X = " << X_sw[i]
-  	 						  << " Device result X = " << X[i] << "  mismatchNum : "<< mismatchNum <<  std::endl;
+  	 						  << " Device result X = " << X[i] <<  std::endl;
   	        std::cout << "Error: Result mismatch" << std::endl;
   	        	        std::cout << "i = " << i << " CPU res X = " << X_sw[i]
 						  << " Device result X = " << X[i] << std::endl;
@@ -50,6 +68,19 @@ OOPS_swap( N, NCU, MAX_CUS, X, incX, Y, incY);
    	free(Y);
    	free(Y_sw);
    	free(X_sw);
+
+	//-------------------------------------------------------------------------------------
+	printf("\n(5) Close OpenCL objects\n");
+	clReleaseProgram(program_interface.program.get());
+	clReleaseContext(program_interface.context.get());
+	clReleaseCommandQueue(program_interface.q.get());
+
+	//-------------------------------------------------------------------------------------
+
+	// End
+	printf("\n");
+
+    return 0;
 
 
 }

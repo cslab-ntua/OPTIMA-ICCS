@@ -66,3 +66,89 @@ void *OOPS_malloc(size_t alloc_bytes){
 
    return X;
 }
+
+
+void convert_packed_matrix_to_Hyperpacked(const char Uplo,const float *Apacked, uint32_t packedSize, float *FPGApacked, uint32_t fpgaPackedSize, uint32_t N, uint32_t VDATA_SIZE)
+{
+	uint32_t limit=N;
+
+	uint32_t fp_idx = 0;
+	uint32_t ap_idx = 0;
+	uint32_t usefulRowElems = N;
+
+
+
+	if ((Uplo == 'U') || (Uplo == 'u')){
+		 printf("Uplo U\n");
+		while (ap_idx < packedSize )
+		{
+			if ( (usefulRowElems%VDATA_SIZE) != 0)
+			{
+				while( (fp_idx%VDATA_SIZE) < VDATA_SIZE - (usefulRowElems%VDATA_SIZE)  )
+				{
+//					 printf("Case 1 fp_idx = %u \n", fp_idx);
+					FPGApacked[fp_idx] = 0 ;
+					fp_idx++;
+
+				}
+			}
+
+			while(ap_idx < limit )
+			{
+//				 printf("Case 2 fp_idx = %u, ap_idx = %u, Apacked[%u] = %f \n", fp_idx, ap_idx, ap_idx, Apacked[ap_idx]);
+				 FPGApacked[fp_idx] = Apacked[ap_idx];
+//				FPGApacked[fp_idx] = ap_idx+1;
+				fp_idx++;
+				ap_idx++;
+
+			}
+			limit = limit + usefulRowElems - 1;
+			usefulRowElems--;
+//			 printf("limit = %u usefulRowElems = %u \n ",limit,usefulRowElems);
+		}
+	}
+	else if ((Uplo == 'L') || (Uplo == 'l')){
+       printf("Uplo L\n");
+    }
+    else {
+		printf("Define Uplo\n");
+    }
+
+}
+
+//The  formula comes form a mathematic analysis of the size of the upper triangular  matrix
+// Is based on arithmetic progression Sv = v*(a1+av)/2
+int OOPS_cmpt_hyperpacked_triang_mtrx_blks(int N, int VDATA_SIZE ){
+
+return ( N%VDATA_SIZE ) * ( N/VDATA_SIZE + 1 ) + (VDATA_SIZE * (( N/VDATA_SIZE ) * (1 + N/VDATA_SIZE ))/2);
+}
+
+int OOPS_Hpacked_triMtx_start_idx(int N, int VDATA_SIZE, int row){
+	//The rows that are not a complete set of VDATA_SIZE
+	int extra_rows = row % VDATA_SIZE;
+	//The number of blocks of VDATA_SIZE numbers that has the provided row
+	int row_blks = ((N - row - 1)/VDATA_SIZE) + 1;
+
+	//Arithmetic progression formula is Sv = v(a1+av)/2
+	//The number of elements between a1 and av. Practically it means how many block of VDATA size row are in the matrix expept the last one
+	// that our current row are in.
+	int v = row/VDATA_SIZE;
+
+	//The number of blocks of VDATA_SIZE numbers has the previous VDATA_SIZEnth of rows
+	int a1 = row_blks+1;
+	//The number of The number of blocks of VDATA_SIZE numbers has the first VDATA_SIZEnth of
+	int av = N/VDATA_SIZE;
+
+	int idx = extra_rows*row_blks + (VDATA_SIZE * v * ( a1 + av ) / 2);
+
+	return idx;
+}
+
+int OOPS_Hpacked_triMtx_end_idx(int N, int VDATA_SIZE, int row){
+	int start_row_idx = OOPS_Hpacked_triMtx_start_idx( N,  VDATA_SIZE,  row);
+	//The number of blocks of VDATA_SIZE numbers that has the provided row
+	int row_blks = ((N - row - 1)/VDATA_SIZE) + 1;
+
+	int end_row_idx = start_row_idx + row_blks - 1;
+	return end_row_idx;
+}

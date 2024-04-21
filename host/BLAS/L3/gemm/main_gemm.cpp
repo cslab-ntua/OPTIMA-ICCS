@@ -1,6 +1,31 @@
-void main_gemm(){
+#include <omp.h>
+#include <ctime>
+#include <chrono>
+#include <stdio.h>
+#include <stdlib.h>
 
-	const int K=2048,Mnew=2048,Nnew=2048;
+#include "oops.hpp"
+#include "matrix_vector_generation.hpp"
+#include "test_functions_set.h"
+
+
+using namespace std;
+using namespace std::chrono;
+
+
+int main(int argc, const char** argv)
+{
+    if (argc != 2) {
+        std::cout << "Usage: " << argv[0] << " <XCLBIN File>" << std::endl;
+        return EXIT_FAILURE;
+    }
+    
+    printf("----------------------------------------------------------------------------------------------------------------------------------------\n");
+	printf("\n(0) Program the device\n");
+	program_device(argv[1]);
+
+	// const int K=2048,Mnew=2048,Nnew=2048;
+	const int K=1024,Mnew=1024,Nnew=1024;
     int lda = Mnew;
     int ldb = K;
     int ldc = Mnew;
@@ -87,4 +112,20 @@ void main_gemm(){
     free(B);
     free(C);
     free(C_sw);
+
+	
+	//-------------------------------------------------------------------------------------
+	printf("\n(5) Close OpenCL objects\n");
+	clReleaseProgram(program_interface.program.get());
+	clReleaseContext(program_interface.context.get());
+	clReleaseCommandQueue(program_interface.q.get());
+
+	//-------------------------------------------------------------------------------------
+
+	// End
+	printf("\n");
+
+    return 0;
 }
+
+

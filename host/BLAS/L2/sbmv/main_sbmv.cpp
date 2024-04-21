@@ -1,12 +1,28 @@
-#include "oops.hpp"
-#include "matrix_vector_generation.hpp"
 #include <omp.h>
 #include <ctime>
 #include <chrono>
+#include <stdio.h>
+#include <stdlib.h>
 
+#include "oops.hpp"
+#include "matrix_vector_generation.hpp"
+#include "test_functions_set.h"
+
+
+using namespace std;
 using namespace std::chrono;
 
-void main_sbmv(){
+
+int main(int argc, const char** argv)
+{
+    if (argc != 2) {
+        std::cout << "Usage: " << argv[0] << " <XCLBIN File>" << std::endl;
+        return EXIT_FAILURE;
+    }
+    
+    printf("----------------------------------------------------------------------------------------------------------------------------------------\n");
+	printf("\n(0) Program the device\n");
+	program_device(argv[1]);
 
     char Uplo = 'U'; // ='U',='u', or ='L','l' for lower
     int N=10240, K=26, incX=1, incY=1;
@@ -64,5 +80,19 @@ void main_sbmv(){
     free(Y);
     free(sw_results);
     free(Apadded);
+
+
+	//-------------------------------------------------------------------------------------
+	printf("\n(5) Close OpenCL objects\n");
+	clReleaseProgram(program_interface.program.get());
+	clReleaseContext(program_interface.context.get());
+	clReleaseCommandQueue(program_interface.q.get());
+
+	//-------------------------------------------------------------------------------------
+
+	// End
+	printf("\n");
+
+    return 0;
 
 }

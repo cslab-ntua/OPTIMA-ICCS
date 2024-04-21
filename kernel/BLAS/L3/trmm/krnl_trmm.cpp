@@ -1,5 +1,5 @@
-// #include "../../include/global.hpp"
-// #include "../../include/common.hpp"
+// #include "global.hpp"
+// #include "common.hpp"
 #include <stdio.h>
 #include <hls_stream.h>
 // #include <ap_int.h>
@@ -12,7 +12,7 @@ typedef float ValueType;
 
 #define W 16
 #define TN 32
-
+#define __SYNTHESIS__
 typedef struct v_datatype { ValueType data[W]; } v_dt;
 
 void read_A(const ValueType *A, hls::stream<ValueType> &A_Stream, const int M, const int N, const ValueType alpha)
@@ -227,7 +227,7 @@ void computation_part(hls::stream<ValueType> &A_Stream_in,	hls::stream<ValueType
 
 extern "C" {
 
-void krnl_trmm(const char Side, const char Uplo, const char TransA, const char Diag, 
+void krnl_trmm(const char Side, const char UpLo, const char TransA, const char Diag, 
 	const int M, const int N, 
 	const ValueType alpha, const ValueType *A, const int lda, 
 	const v_dt *B, v_dt *B_out, const int ldb)
@@ -239,7 +239,7 @@ void krnl_trmm(const char Side, const char Uplo, const char TransA, const char D
 	#pragma HLS INTERFACE s_axilite port = Side
 	#pragma HLS INTERFACE s_axilite port = UpLo
 	#pragma HLS INTERFACE s_axilite port = TransA
-	#pragma HLS INTERFACE s_axilite port = diag
+	#pragma HLS INTERFACE s_axilite port = Diag
 	#pragma HLS INTERFACE s_axilite port = M
 	#pragma HLS INTERFACE s_axilite port = N
 	#pragma HLS INTERFACE s_axilite port = alpha

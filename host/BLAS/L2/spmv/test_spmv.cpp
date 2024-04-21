@@ -1,4 +1,7 @@
-void OOPS_spmvs(const char Uplo,const char Diag,const int N, const float  *AP, const uint32_t packedMatrixSize, float alpha, float  *X, float beta, float *Yin,  const int incX){
+#include "test_functions_set.h"
+#include <cmath>
+
+void OOPS_spmv(const char Uplo,const char Diag,const int N, const float  *AP, const uint32_t packedMatrixSize, float alpha, float  *X, float beta, float *Yin,  const int incX){
 	 	cl_int err;
 	 	int fpgaPackedSize = OOPS_cmpt_hyperpacked_triang_mtrx_blks(N, V_DATA_SIZE) * V_DATA_SIZE;
 	 	float *AhyperPacked = (float *)OOPS_malloc(sizeof(float)*fpgaPackedSize);
@@ -38,84 +41,84 @@ void OOPS_spmvs(const char Uplo,const char Diag,const int N, const float  *AP, c
 
 	 	cl::Kernel krnl;
 	    std::cout << "1." << std::endl;
-		OCL_CHECK(err, krnl= cl::Kernel (program,"krnl_spmv", &err));
+		OCL_CHECK(err, krnl= cl::Kernel (program_interface.program,"krnl_spmv", &err));
 
 
 
 
 	    // Allocate Buffer in Global Memory
 		std::cout << "1.1" << std::endl;
-		OCL_CHECK(err, cl::Buffer Sx1(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, input_vector_size_bytes,
+		OCL_CHECK(err, cl::Buffer Sx1(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, input_vector_size_bytes,
 					                                           (void *) X, &err));
-		OCL_CHECK(err, cl::Buffer Sx2(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, input_vector_size_bytes,
+		OCL_CHECK(err, cl::Buffer Sx2(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, input_vector_size_bytes,
 													   	   	   (void *) X, &err));
-		OCL_CHECK(err, cl::Buffer Sx3(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, input_vector_size_bytes,
+		OCL_CHECK(err, cl::Buffer Sx3(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, input_vector_size_bytes,
 															   (void *) X, &err));
-		OCL_CHECK(err, cl::Buffer Sx4(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, input_vector_size_bytes,
+		OCL_CHECK(err, cl::Buffer Sx4(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, input_vector_size_bytes,
 															   (void *) X, &err));
-		OCL_CHECK(err, cl::Buffer Sx5(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, input_vector_size_bytes,
+		OCL_CHECK(err, cl::Buffer Sx5(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, input_vector_size_bytes,
 															   (void *) X, &err));
-		OCL_CHECK(err, cl::Buffer Sx6(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, input_vector_size_bytes,
+		OCL_CHECK(err, cl::Buffer Sx6(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, input_vector_size_bytes,
 															   (void *) X, &err));
-		OCL_CHECK(err, cl::Buffer Sx7(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, input_vector_size_bytes,
+		OCL_CHECK(err, cl::Buffer Sx7(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, input_vector_size_bytes,
 																	   (void *) X, &err));
-		OCL_CHECK(err, cl::Buffer Sx8(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, input_vector_size_bytes,
+		OCL_CHECK(err, cl::Buffer Sx8(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, input_vector_size_bytes,
 																	   (void *) X, &err));
 		/*-----------------------------------------------------------------------------------------------------*/
-		OCL_CHECK(err, cl::Buffer Sx11(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, input_vector_size_bytes,
+		OCL_CHECK(err, cl::Buffer Sx11(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, input_vector_size_bytes,
 					                                           (void *) X, &err));
-		OCL_CHECK(err, cl::Buffer Sx22(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, input_vector_size_bytes,
+		OCL_CHECK(err, cl::Buffer Sx22(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, input_vector_size_bytes,
 															   (void *) X, &err));
-		OCL_CHECK(err, cl::Buffer Sx33(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, input_vector_size_bytes,
+		OCL_CHECK(err, cl::Buffer Sx33(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, input_vector_size_bytes,
 															   (void *) X, &err));
-		OCL_CHECK(err, cl::Buffer Sx44(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, input_vector_size_bytes,
+		OCL_CHECK(err, cl::Buffer Sx44(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, input_vector_size_bytes,
 															   (void *) X, &err));
-		OCL_CHECK(err, cl::Buffer Sx55(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, input_vector_size_bytes,
+		OCL_CHECK(err, cl::Buffer Sx55(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, input_vector_size_bytes,
 					                                           (void *) X, &err));
-		OCL_CHECK(err, cl::Buffer Sx66(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, input_vector_size_bytes,
+		OCL_CHECK(err, cl::Buffer Sx66(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, input_vector_size_bytes,
 															   (void *) X, &err));
-		OCL_CHECK(err, cl::Buffer Sx77(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, input_vector_size_bytes,
+		OCL_CHECK(err, cl::Buffer Sx77(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, input_vector_size_bytes,
 															   (void *) X, &err));
-		OCL_CHECK(err, cl::Buffer Sx88(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, input_vector_size_bytes,
+		OCL_CHECK(err, cl::Buffer Sx88(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, input_vector_size_bytes,
 															   (void *) X, &err));
 
 
 		/*-----------------------------------------------------------------------------------------------------*/
 	    std::cout << "1.2" << std::endl;
 
-	    OCL_CHECK(err, cl::Buffer Sa1(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, matrix_prt_sBytes[0],
+	    OCL_CHECK(err, cl::Buffer Sa1(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, matrix_prt_sBytes[0],
 	    	    	                                             (void *) AhyperPacked, &err));
-		OCL_CHECK(err, cl::Buffer Sa2(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, matrix_prt_sBytes[1],
+		OCL_CHECK(err, cl::Buffer Sa2(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, matrix_prt_sBytes[1],
 	    														 (void *) &AhyperPacked[break_vds_blk_idx[1] * V_DATA_SIZE], &err));
-		OCL_CHECK(err, cl::Buffer Sa3(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, matrix_prt_sBytes[2],
+		OCL_CHECK(err, cl::Buffer Sa3(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, matrix_prt_sBytes[2],
 																 (void *) &AhyperPacked[break_vds_blk_idx[2] * V_DATA_SIZE], &err));
-		OCL_CHECK(err, cl::Buffer Sa4(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, matrix_prt_sBytes[3],
+		OCL_CHECK(err, cl::Buffer Sa4(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, matrix_prt_sBytes[3],
 																 (void *) &AhyperPacked[break_vds_blk_idx[3] * V_DATA_SIZE], &err));
-		OCL_CHECK(err, cl::Buffer Sa5(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, matrix_prt_sBytes[4],
+		OCL_CHECK(err, cl::Buffer Sa5(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, matrix_prt_sBytes[4],
 																 (void *) &AhyperPacked[break_vds_blk_idx[4] * V_DATA_SIZE], &err));
-		OCL_CHECK(err, cl::Buffer Sa6(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, matrix_prt_sBytes[5],
+		OCL_CHECK(err, cl::Buffer Sa6(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, matrix_prt_sBytes[5],
 																 (void *) &AhyperPacked[break_vds_blk_idx[5] * V_DATA_SIZE], &err));
-		OCL_CHECK(err, cl::Buffer Sa7(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, matrix_prt_sBytes[6],
+		OCL_CHECK(err, cl::Buffer Sa7(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, matrix_prt_sBytes[6],
 																 (void *) &AhyperPacked[break_vds_blk_idx[6] * V_DATA_SIZE], &err));
-		OCL_CHECK(err, cl::Buffer Sa8(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, matrix_prt_sBytes[7],
+		OCL_CHECK(err, cl::Buffer Sa8(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, matrix_prt_sBytes[7],
 																 (void *) &AhyperPacked[break_vds_blk_idx[7] * V_DATA_SIZE], &err));
 
 		/*-----------------------------------------------------------------------------------------------------*/
-	   	OCL_CHECK(err, cl::Buffer Sy1_in(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE, out_vec_prt_sBytes[0],
+	   	OCL_CHECK(err, cl::Buffer Sy1_in(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE, out_vec_prt_sBytes[0],
 	    	                                             (void *) Yin, &err));
-		OCL_CHECK(err, cl::Buffer Sy2_in(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE, out_vec_prt_sBytes[1],
+		OCL_CHECK(err, cl::Buffer Sy2_in(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE, out_vec_prt_sBytes[1],
 														 (void *) &Yin[break_row[1]], &err));
-		OCL_CHECK(err, cl::Buffer Sy3_in(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE, out_vec_prt_sBytes[2],
+		OCL_CHECK(err, cl::Buffer Sy3_in(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE, out_vec_prt_sBytes[2],
 														 (void *) &Yin[break_row[2]], &err));
-		OCL_CHECK(err, cl::Buffer Sy4_in(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE, out_vec_prt_sBytes[3],
+		OCL_CHECK(err, cl::Buffer Sy4_in(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE, out_vec_prt_sBytes[3],
 														 (void *) &Yin[break_row[3]], &err));
-		OCL_CHECK(err, cl::Buffer Sy5_in(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE, out_vec_prt_sBytes[4],
+		OCL_CHECK(err, cl::Buffer Sy5_in(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE, out_vec_prt_sBytes[4],
 														 (void *) &Yin[break_row[4]], &err));
-		OCL_CHECK(err, cl::Buffer Sy6_in(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE, out_vec_prt_sBytes[5],
+		OCL_CHECK(err, cl::Buffer Sy6_in(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE, out_vec_prt_sBytes[5],
 														 (void *) &Yin[break_row[5]], &err));
-		OCL_CHECK(err, cl::Buffer Sy7_in(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE, out_vec_prt_sBytes[5],
+		OCL_CHECK(err, cl::Buffer Sy7_in(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE, out_vec_prt_sBytes[5],
 														 (void *) &Yin[break_row[6]], &err));
-		OCL_CHECK(err, cl::Buffer Sy8_in(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE, out_vec_prt_sBytes[5],
+		OCL_CHECK(err, cl::Buffer Sy8_in(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE, out_vec_prt_sBytes[5],
 														 (void *) &Yin[break_row[7]], &err));
 
 		
@@ -186,59 +189,59 @@ void OOPS_spmvs(const char Uplo,const char Diag,const int N, const float  *AP, c
 
 
 	    // Copy input data to device global memory
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sa1}, 0 /* 0 means from host*/));
-	    OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sx1}, 0 /* 0 means from host*/));
-	    OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sx11}, 0 /* 0 means from host*/));
-	    OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sa2}, 0 /* 0 means from host*/));
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sx2}, 0 /* 0 means from host*/));
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sx22}, 0 /* 0 means from host*/));
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sa3}, 0 /* 0 means from host*/));
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sx3}, 0 /* 0 means from host*/));
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sx33}, 0 /* 0 means from host*/));
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sa4}, 0 /* 0 means from host*/));
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sx4}, 0 /* 0 means from host*/));
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sx44}, 0 /* 0 means from host*/));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sa1}, 0 /* 0 means from host*/));
+	    OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sx1}, 0 /* 0 means from host*/));
+	    OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sx11}, 0 /* 0 means from host*/));
+	    OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sa2}, 0 /* 0 means from host*/));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sx2}, 0 /* 0 means from host*/));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sx22}, 0 /* 0 means from host*/));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sa3}, 0 /* 0 means from host*/));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sx3}, 0 /* 0 means from host*/));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sx33}, 0 /* 0 means from host*/));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sa4}, 0 /* 0 means from host*/));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sx4}, 0 /* 0 means from host*/));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sx44}, 0 /* 0 means from host*/));
 		/********************************************************************************/
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sa5}, 0 /* 0 means from host*/));
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sx5}, 0 /* 0 means from host*/));
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sx55}, 0 /* 0 means from host*/));
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sa6}, 0 /* 0 means from host*/));
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sx6}, 0 /* 0 means from host*/));
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sx66}, 0 /* 0 means from host*/));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sa5}, 0 /* 0 means from host*/));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sx5}, 0 /* 0 means from host*/));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sx55}, 0 /* 0 means from host*/));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sa6}, 0 /* 0 means from host*/));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sx6}, 0 /* 0 means from host*/));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sx66}, 0 /* 0 means from host*/));
 
 		/********************************************************************************/
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sa7}, 0 /* 0 means from host*/));
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sx7}, 0 /* 0 means from host*/));
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sx77}, 0 /* 0 means from host*/));
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sa8}, 0 /* 0 means from host*/));
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sx8}, 0 /* 0 means from host*/));
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sx88}, 0 /* 0 means from host*/));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sa7}, 0 /* 0 means from host*/));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sx7}, 0 /* 0 means from host*/));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sx77}, 0 /* 0 means from host*/));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sa8}, 0 /* 0 means from host*/));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sx8}, 0 /* 0 means from host*/));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sx88}, 0 /* 0 means from host*/));
 
-	    OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sy1_in}, 0 /* 0 means from host*/));
-	    OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sy2_in}, 0 /* 0 means from host*/));
-	    OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sy3_in}, 0 /* 0 means from host*/));
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sy4_in}, 0 /* 0 means from host*/));
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sy5_in}, 0 /* 0 means from host*/));
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sy6_in}, 0 /* 0 means from host*/));
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sy7_in}, 0 /* 0 means from host*/));
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sy8_in}, 0 /* 0 means from host*/));
+	    OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sy1_in}, 0 /* 0 means from host*/));
+	    OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sy2_in}, 0 /* 0 means from host*/));
+	    OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sy3_in}, 0 /* 0 means from host*/));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sy4_in}, 0 /* 0 means from host*/));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sy5_in}, 0 /* 0 means from host*/));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sy6_in}, 0 /* 0 means from host*/));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sy7_in}, 0 /* 0 means from host*/));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sy8_in}, 0 /* 0 means from host*/));
 
-		OCL_CHECK(err, err = q.finish());
+		OCL_CHECK(err, err = program_interface.q.finish());
 
 	    // Launch the Kernel
-		OCL_CHECK(err, err = q.enqueueTask(krnl));
-	    OCL_CHECK(err, err = q.finish());
+		OCL_CHECK(err, err = program_interface.q.enqueueTask(krnl));
+	    OCL_CHECK(err, err = program_interface.q.finish());
 	    
 	    // Copy Result from Device Global Memory to Host Local Memory
-	    OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sy1_in}, CL_MIGRATE_MEM_OBJECT_HOST));
-	    OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sy2_in}, CL_MIGRATE_MEM_OBJECT_HOST));
-	    OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sy3_in}, CL_MIGRATE_MEM_OBJECT_HOST));
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sy4_in}, CL_MIGRATE_MEM_OBJECT_HOST));
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sy5_in}, CL_MIGRATE_MEM_OBJECT_HOST));
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sy6_in}, CL_MIGRATE_MEM_OBJECT_HOST));
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sy7_in}, CL_MIGRATE_MEM_OBJECT_HOST));
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sy8_in}, CL_MIGRATE_MEM_OBJECT_HOST));
-	    OCL_CHECK(err, err = q.finish());
+	    OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sy1_in}, CL_MIGRATE_MEM_OBJECT_HOST));
+	    OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sy2_in}, CL_MIGRATE_MEM_OBJECT_HOST));
+	    OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sy3_in}, CL_MIGRATE_MEM_OBJECT_HOST));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sy4_in}, CL_MIGRATE_MEM_OBJECT_HOST));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sy5_in}, CL_MIGRATE_MEM_OBJECT_HOST));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sy6_in}, CL_MIGRATE_MEM_OBJECT_HOST));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sy7_in}, CL_MIGRATE_MEM_OBJECT_HOST));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sy8_in}, CL_MIGRATE_MEM_OBJECT_HOST));
+	    OCL_CHECK(err, err = program_interface.q.finish());
 
 	    clReleaseKernel(krnl.get());
 

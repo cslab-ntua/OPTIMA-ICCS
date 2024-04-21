@@ -1,3 +1,5 @@
+#include "test_functions_set.h"
+
 void OOPS_rotm( const int N, const int NCU, const int MAX_CUS, float *X, const int incX, float *Y, const int incY, const float *P){
 
 	cl_int err;
@@ -28,27 +30,27 @@ void OOPS_rotm( const int N, const int NCU, const int MAX_CUS, float *X, const i
 					// compute unit.
 					// For such case, this kernel object can only access the specific
 					// Compute unit
-					OCL_CHECK(err, krnl[i] = cl::Kernel(program, krnl_name_full.c_str(), &err));
+					OCL_CHECK(err, krnl[i] = cl::Kernel(program_interface.program, krnl_name_full.c_str(), &err));
 	}
 	
 	// Allocate Buffer in Global Memory
 	for (int i = 0; i < NCU; i++) {
 		if(i!=NCU-1){
-			OCL_CHECK(err, Sx[i] = cl::Buffer(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+			OCL_CHECK(err, Sx[i] = cl::Buffer(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
 								input_vector_size_bytes, (void*) &X[i*(N/NCU)], &err));
 
-			OCL_CHECK(err, Sy[i] = cl::Buffer(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE ,
+			OCL_CHECK(err, Sy[i] = cl::Buffer(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE ,
 								output_vector_size_bytes, (void*) &Y[i*(N/NCU)], &err));
 
 		}
 		else {
-			OCL_CHECK(err, Sx[i] = cl::Buffer(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
+			OCL_CHECK(err, Sx[i] = cl::Buffer(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE,
 					last_input_vector_size_bytes, (void*) &X[i*(N/NCU)], &err));
 
-			OCL_CHECK(err, Sy[i] = cl::Buffer(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE ,
+			OCL_CHECK(err, Sy[i] = cl::Buffer(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE ,
 					last_output_vector_size_bytes, (void*) &Y[i*(N/NCU) ], &err));
 		}
-		OCL_CHECK(err, SP[i] = cl::Buffer(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY ,
+		OCL_CHECK(err, SP[i] = cl::Buffer(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY ,
 							sizeof(float)*5, (void*) P, &err));
 
 	}
@@ -73,26 +75,26 @@ void OOPS_rotm( const int N, const int NCU, const int MAX_CUS, float *X, const i
 		OCL_CHECK(err, err = krnl[i].setArg(narg++, SP[i]));
 
 		//Copy input data to device global memory
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sx[i]}, 0 /* 0 means from host*/));
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sy[i]}, 0 /* 0 means from host*/));
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({SP[i]}, 0 /* 0 means from host*/));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sx[i]}, 0 /* 0 means from host*/));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sy[i]}, 0 /* 0 means from host*/));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({SP[i]}, 0 /* 0 means from host*/));
 	}
-	OCL_CHECK(err, err = q.finish());
+	OCL_CHECK(err, err = program_interface.q.finish());
 
 
 	// Launch the Kernel
 	for (int i = 0; i < NCU; i++)
 	{
-		OCL_CHECK(err, err = q.enqueueTask(krnl[i]));
+		OCL_CHECK(err, err = program_interface.q.enqueueTask(krnl[i]));
 	}
-	OCL_CHECK(err, err = q.finish());
+	OCL_CHECK(err, err = program_interface.q.finish());
 	
 	// Copy Result from Device Global Memory to Host Local Memory
 	for (int i = 0; i < NCU; i++)
 	{
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sx[i]}, CL_MIGRATE_MEM_OBJECT_HOST));
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({Sy[i]}, CL_MIGRATE_MEM_OBJECT_HOST));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sx[i]}, CL_MIGRATE_MEM_OBJECT_HOST));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({Sy[i]}, CL_MIGRATE_MEM_OBJECT_HOST));
 	}
-	OCL_CHECK(err, err = q.finish());
+	OCL_CHECK(err, err = program_interface.q.finish());
 
 }

@@ -1,3 +1,9 @@
+#include <stdio.h>
+#include <hls_stream.h>
+#include "ap_int.h"
+#include "global.hpp"
+#include "common.hpp"
+
 void nrm2(hls::stream< v_dt>& Xin, hls::stream< v_dt>& Yin, int N,float* result) {
 	unsigned int vSize = ((N - 1) / VDATA_SIZE) + 1;
 

@@ -1,3 +1,9 @@
+#include <stdio.h>
+#include <hls_stream.h>
+#include "ap_int.h"
+#include "global.hpp"
+#include "common.hpp"
+
  void iamin(hls::stream< v_dt>& Xin,const  int N, int *result) {
 	v_dt temp;
 	int i_min[VDATA_SIZE];

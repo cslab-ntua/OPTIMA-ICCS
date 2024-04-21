@@ -1,4 +1,24 @@
-void main_spmv(){
+#include <chrono>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "oops.hpp"
+#include "matrix_vector_generation.hpp"
+#include "test_functions_set.h"
+
+using namespace std;
+
+int main(int argc, const char** argv)
+{
+    if (argc != 2) {
+        std::cout << "Usage: " << argv[0] << " <XCLBIN File>" << std::endl;
+        return EXIT_FAILURE;
+    }
+    
+    printf("----------------------------------------------------------------------------------------------------------------------------------------\n");
+	printf("\n(0) Program the device\n");
+	program_device(argv[1]);
+	
 	int incX = 1;
 	int N = 2048;
 
@@ -84,7 +104,6 @@ void main_spmv(){
 	convert_triangular_matrix_to_packed('U', A, Apacked, N, packedMatrixSize);
 
 	// Unoptimized software implementation of the spmv algorithm for verification
-	high_resolution_clock::time_point swStart = high_resolution_clock::now();
 	if(Uplo == 'U' || Uplo == 'u'){
 		for (int i = 0; i < N; i++){
 			sw_results[i] = Yin[i]*beta;
@@ -132,5 +151,19 @@ void main_spmv(){
 	free(Yin);
 	free(Apacked);
 	free(sw_results);
+
+
+	//-------------------------------------------------------------------------------------
+	printf("\n(5) Close OpenCL objects\n");
+	clReleaseProgram(program_interface.program.get());
+	clReleaseContext(program_interface.context.get());
+	clReleaseCommandQueue(program_interface.q.get());
+
+	//-------------------------------------------------------------------------------------
+
+	// End
+	printf("\n");
+
+    return 0;
 
 }

@@ -1,3 +1,5 @@
+#include "test_functions_set.h"
+
 void OOPS_gemm(const char TransA, const char TransB, const int M, const int N, const int K, const float alpha, const float  *A, const int lda,
 				const float  *B, const int ldb, const float beta, float  *C, const int ldc)
 {
@@ -13,7 +15,7 @@ void OOPS_gemm(const char TransA, const char TransB, const int M, const int N, c
 		std::string cu_id = std::to_string(i + 1);
 		std::string krnl_name_full = krnl_name + ":{" + krnl_name +"_" + cu_id + "}";
 		printf("Creating a kernel [%s] for CU(%d)\n", krnl_name_full.c_str(), i);
-		OCL_CHECK(err, krnls[i] = cl::Kernel(program, krnl_name_full.c_str(), &err));
+		OCL_CHECK(err, krnls[i] = cl::Kernel(program_interface.program, krnl_name_full.c_str(), &err));
 	}
 
 	std::vector<int> stripe_nrows(nstripe);
@@ -77,16 +79,16 @@ void OOPS_gemm(const char TransA, const char TransB, const int M, const int N, c
 		_C_out[i]= (float*) OOPS_malloc((size_t)(stripe_nterms_C[i]*sizeof(float)));
 		// printf("buffer_C_out[%d] %lf MB\n\n", i, stripe_nterms_C[i]*sizeof(float)/(1024*1024.0));
 
-		OCL_CHECK(err, buffer_A[i]     = cl::Buffer(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,  stripe_nterms_A[i]*sizeof(float), _A[i],     &err));
-		OCL_CHECK(err, buffer_B[i]     = cl::Buffer(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,  stripe_nterms_B[i]*sizeof(float), _B[i],     &err));
-		OCL_CHECK(err, buffer_C_in[i]  = cl::Buffer(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,  stripe_nterms_C[i]*sizeof(float), _C_in[i],  &err));
-		OCL_CHECK(err, buffer_C_out[i] = cl::Buffer(context, CL_MEM_USE_HOST_PTR | CL_MEM_WRITE_ONLY, stripe_nterms_C[i]*sizeof(float), _C_out[i], &err));
+		OCL_CHECK(err, buffer_A[i]     = cl::Buffer(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,  stripe_nterms_A[i]*sizeof(float), _A[i],     &err));
+		OCL_CHECK(err, buffer_B[i]     = cl::Buffer(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,  stripe_nterms_B[i]*sizeof(float), _B[i],     &err));
+		OCL_CHECK(err, buffer_C_in[i]  = cl::Buffer(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,  stripe_nterms_C[i]*sizeof(float), _C_in[i],  &err));
+		OCL_CHECK(err, buffer_C_out[i] = cl::Buffer(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_WRITE_ONLY, stripe_nterms_C[i]*sizeof(float), _C_out[i], &err));
 	}
-
+	// int Layout = 0;
 	// Set the Kernel Arguments
 	for (int i = 0; i < nstripe; i++) {
 		int narg=0;
-		OCL_CHECK(err, err = krnls[i].setArg(narg++,Layout));
+		// OCL_CHECK(err, err = krnls[i].setArg(narg++,Layout));
 		OCL_CHECK(err, err = krnls[i].setArg(narg++,TransA));
 		OCL_CHECK(err, err = krnls[i].setArg(narg++,TransB));
 
@@ -110,22 +112,24 @@ void OOPS_gemm(const char TransA, const char TransB, const int M, const int N, c
 		// After creating buffer using Host Mem Pointer, clEnqueueMigrateMemObjects can be used for immediate migration
 		// of data without considering the fact that data is actually needed or not by kernel operation.
 		// Copy input data to device global memory
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({buffer_A[i],buffer_B[i],buffer_C_in[i]}, 0 /* 0 means from host */));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({buffer_A[i],buffer_B[i],buffer_C_in[i]}, 0 /* 0 means from host */));
 	}
-	q.finish();
+	program_interface.q.finish();
 	
 	// Launch the Kernel
 	for (int i = 0; i < nstripe; i++){
-		OCL_CHECK(err, err = q.enqueueTask(krnls[i]));
+		OCL_CHECK(err, err = program_interface.q.enqueueTask(krnls[i]));
 	}
-	q.finish();
+	program_interface.q.finish();
 
 	// Copy Result from Device Global Memory to Host Local Memory
 	for (int i = 0; i < nstripe; i++){
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({buffer_C_out[i]},1));
-		memcpy(C_out+stripe_start_C[i],_C_out[i], stripe_nrows[i]*N*sizeof(float));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({buffer_C_out[i]},1));
+		// memcpy(C_out+stripe_start_C[i],_C_out[i], stripe_nrows[i]*N*sizeof(float));
+		memcpy(C+stripe_start_C[i],_C_out[i], stripe_nrows[i]*N*sizeof(float));
+		
 	}
-	q.finish();
+	program_interface.q.finish();
 
 	for (int i = 0; i < nstripe; i++){
 		clReleaseKernel(krnls[i].get());

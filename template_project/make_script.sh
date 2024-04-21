@@ -77,7 +77,7 @@ echo -e "Welcome to build of project : ${PROJECT_NAME}, for platform ${VITIS_PLA
 
 KRNL_NAME=krnl_${TARGET_KRNL}
 
-KRNL_COMPILE_CFG=$(find . -type f -name "${KRNL_NAME}*-compile_${VITIS_PLATFORM}.cfg")
+KRNL_COMPILE_CFG=$(find . -type f -name "${KRNL_NAME}-compile_${VITIS_PLATFORM}.cfg")
 echo ${KRNL_COMPILE_CFG}
 KRNL_COMPILE_CFG=${KRNL_COMPILE_CFG##*/}
 echo ${KRNL_COMPILE_CFG}

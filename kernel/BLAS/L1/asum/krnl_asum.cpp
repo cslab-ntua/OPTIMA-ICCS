@@ -1,3 +1,9 @@
+#include <stdio.h>
+#include <hls_stream.h>
+#include "ap_int.h"
+#include "global.hpp"
+#include "common.hpp"
+
 void asum(hls::stream< v_dt>& Xin, int N, float* final_result) {
 
 	float result[VDATA_SIZE];

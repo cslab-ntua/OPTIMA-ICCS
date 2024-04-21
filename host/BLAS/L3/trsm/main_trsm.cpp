@@ -1,4 +1,28 @@
-void main_trsm(){
+#include <omp.h>
+#include <ctime>
+#include <chrono>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "oops.hpp"
+#include "matrix_vector_generation.hpp"
+#include "test_functions_set.h"
+
+
+using namespace std;
+using namespace std::chrono;
+
+
+int main(int argc, const char** argv)
+{
+    if (argc != 2) {
+        std::cout << "Usage: " << argv[0] << " <XCLBIN File>" << std::endl;
+        return EXIT_FAILURE;
+    }
+    
+    printf("----------------------------------------------------------------------------------------------------------------------------------------\n");
+	printf("\n(0) Program the device\n");
+	program_device(argv[1]);
 
 	const int Mnew=2048,Nnew=2048;
     int lda = Mnew;
@@ -12,7 +36,7 @@ void main_trsm(){
 
 
     MxN_matrix(B,Mnew,Nnew);
-    triangular_MxN_matrix('U',A,Nnew);
+    triangular_NxN_matrix('U',A,Nnew);
 
 
     float alpha=((float) rand()) / (float) RAND_MAX;
@@ -61,4 +85,18 @@ void main_trsm(){
     free(B);
     free(C);
     free(B_sw);
+
+	//-------------------------------------------------------------------------------------
+	printf("\n(5) Close OpenCL objects\n");
+	clReleaseProgram(program_interface.program.get());
+	clReleaseContext(program_interface.context.get());
+	clReleaseCommandQueue(program_interface.q.get());
+
+	//-------------------------------------------------------------------------------------
+
+	// End
+	printf("\n");
+
+    return 0;
 }
+

@@ -1,5 +1,5 @@
-// #include "../../include/global.hpp"
-// #include "../../include/common.hpp"
+// #include "global.hpp"
+// #include "common.hpp"
 #include <stdio.h>
 #include <hls_stream.h>
 // #include <ap_int.h>
@@ -12,7 +12,7 @@ typedef float ValueType;
 
 #define W 16
 #define TN 64
-
+// #define __SYNTHESIS__
 typedef struct v_datatype { ValueType data[W]; } v_dt;
 
 void read_A(const ValueType *A, hls::stream<ValueType> &A_Stream, const int M, const int K, const int N, const ValueType alpha, const ValueType beta)
@@ -298,7 +298,7 @@ void krnl_gemm(const char TransA, const char TransB,
 	#pragma HLS INTERFACE m_axi port = C_in offset = slave bundle = gmem2
 	#pragma HLS INTERFACE m_axi port = C_out offset = slave bundle = gmem3
 
-	#pragma HLS INTERFACE s_axilite port = Layout
+	// #pragma HLS INTERFACE s_axilite port = Layout
 	#pragma HLS INTERFACE s_axilite port = TransA
 	#pragma HLS INTERFACE s_axilite port = TransB
 	#pragma HLS INTERFACE s_axilite port = M

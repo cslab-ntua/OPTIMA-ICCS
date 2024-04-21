@@ -1,3 +1,9 @@
+#include <stdio.h>
+#include <hls_stream.h>
+#include "ap_int.h"
+#include "global.hpp"
+#include "common.hpp"
+
 void rot (hls::stream< v_dt>& Xin, hls::stream< v_dt>& Yin,hls::stream< v_dt>& Xout, hls::stream< v_dt>& Yout, const int N,const float C,const float S) {
 
 	float temp_x[VDATA_SIZE];
