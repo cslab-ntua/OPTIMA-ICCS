@@ -9,6 +9,12 @@ void OOPS_trsm(const char Side, const char Uplo, const  char TransA, const char 
 			A_trans[j*M+i] = A[i*M + j];
 		}
 	}
+	float* B_trans = (float*) OOPS_malloc(sizeof(float)*M*M);
+	for (int j = 0; j < M; j++){
+		for (int i = 0; i < M; i++){
+			B_trans[j*M+i] = B[i*M + j];
+		}
+	}
 
 	cl_int err;
 
@@ -96,7 +102,7 @@ void OOPS_trsm(const char Side, const char Uplo, const  char TransA, const char 
 		_B[i]= (float*) OOPS_malloc((size_t)(stripe_nterms_B[i]*sizeof(float)));
 		for(int jj=0; jj<stripe_ncols[i]; jj++)
 			for(int ii=0; ii<M; ii++)
-				_B[i][ii*stripe_ncols[i] + jj] = B[ii*N + jj + stripe_col_offset[i]];
+				_B[i][ii*stripe_ncols[i] + jj] = B_trans[ii*N + jj + stripe_col_offset[i]];
 		// printf("buffer_B[%d] %lf MB\n", i, stripe_nterms_B[i]*sizeof(float)/(1024*1024.0));
 
 		_C[i]= (float*) OOPS_malloc((size_t)(stripe_nterms_C[i]*sizeof(float)));
@@ -129,11 +135,11 @@ void OOPS_trsm(const char Side, const char Uplo, const  char TransA, const char 
 		OCL_CHECK(err, err = krnls[i].setArg(narg++,buffer_C[i]));
 		OCL_CHECK(err, err = krnls[i].setArg(narg++,ldb));
 
-		for(int j=0; j<num_of_CUs; j++){
+		for(int j=0; j<num_of_CUs-1; j++){
 			OCL_CHECK(err, err = krnls[i].setArg(narg++,row_break[j])); // it will only be 1 here...anyway
 		}
 		
-		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({buffer_A1[i],buffer_A2[i],buffer_B[i],buffer_C[i]}, 0));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({buffer_A1[i],buffer_A2[i],buffer_B[i]}, 0));
 	}
 	program_interface.q.finish();
 	
@@ -160,4 +166,5 @@ void OOPS_trsm(const char Side, const char Uplo, const  char TransA, const char 
 		clReleaseKernel(krnls[i].get());
 	}
 	free(A_trans);
+	free(B_trans);
 }
