@@ -9,6 +9,9 @@ void OOPS_trsv(const char Uplo, const char TransA, const char Diag,
 			A_trans[j*N+i] = A[i*N + j];
 		}
 	}
+	float* B= (float *)OOPS_malloc(sizeof(float)*N*incX);
+	for(int i=0; i<N; i++)
+		B[i] = X[i];
 
 	cl_int err;
 
@@ -103,7 +106,7 @@ void OOPS_trsv(const char Uplo, const char TransA, const char Diag,
 	// Allocate Buffer in Global Memory
 	for (int i = 0; i < nstripe; i++) {
 		_A[i]= (float*) OOPS_malloc((size_t)(stripe_nterms_A[i]*sizeof(float)));
-		memcpy(_A[i],A_m_trans,stripe_nterms_A[i]*sizeof(float));
+		memcpy(_A[i],A_trans,stripe_nterms_A[i]*sizeof(float));
 		
 		_B[i]= (float*) OOPS_malloc((size_t)(stripe_nterms_B[i]*sizeof(float)));
 		for(int ii=0; ii<N; ii++)
@@ -160,10 +163,10 @@ void OOPS_trsv(const char Uplo, const char TransA, const char Diag,
 		OCL_CHECK(err, err = krnls[i].setArg(narg++,lda));
 		OCL_CHECK(err, err = krnls[i].setArg(narg++,buffer_B[i]));
 		OCL_CHECK(err, err = krnls[i].setArg(narg++,buffer_X[i]));
-		OCL_CHECK(err, err = krnls[i].setArg(narg++,ldb));
+		OCL_CHECK(err, err = krnls[i].setArg(narg++,incX));
 
 		for(int k=0; k<num_of_CUs-1; k++)
-			OCL_CHECK(err, err =krnls[i].setArg(narg++,row_break[k]));
+			OCL_CHECK(err, err = krnls[i].setArg(narg++,row_break[k]));
 
 		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({buffer_A1[i],buffer_A2[i],buffer_A3[i],buffer_A4[i],buffer_A5[i],buffer_A6[i],buffer_A7[i],buffer_A8[i],buffer_A9[i],buffer_A10[i],buffer_A11[i],buffer_A12[i],buffer_A13[i],buffer_A14[i],buffer_A15[i],buffer_A16[i],buffer_B[i],buffer_X[i]}, 0));
 
@@ -179,16 +182,19 @@ void OOPS_trsv(const char Uplo, const char TransA, const char Diag,
 	// Copy Result from Device Global Memory to Host Local Memory
 	for (int i = 0; i < nstripe; i++){
 		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({buffer_X[i]},1));
-		for(int ii=0; ii<K; ii++){
+	}
+	program_interface.q.finish();
+	for (int i = 0; i < nstripe; i++){
+		for(int ii=0; ii<N; ii++){
 			for(int jj=0; jj<stripe_ncols[i]; jj++){
 				X[ii*1 + jj + stripe_col_offset[i]] = _X[i][ii*stripe_ncols[i] + jj];
 			}
 		}
 	}
-	program_interface.q.finish();
 
 	for (int i = 0; i < nstripe; i++){
 		clReleaseKernel(krnls[i].get());
 	}
     free(A_trans);
+    free(B);
 }

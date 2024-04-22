@@ -3548,7 +3548,7 @@ void write_x(hls::stream<ValueType>& Xstream1, hls::stream<ValueType>& Xstream2,
 
 extern "C" {
 
-void krnl_trsv(const int uplo, const int transa, const int diag, 
+void krnl_trsv(const char UpLo, const char TransA, const char Diag, 
 	const int K, 
 	const v_dt *A1, const v_dt *A2, const v_dt *A3, const v_dt *A4, const v_dt *A5, const v_dt *A6, const v_dt *A7, const v_dt *A8, const v_dt *A9, const v_dt *A10, const v_dt *A11, const v_dt *A12, const v_dt *A13, const v_dt *A14, const v_dt *A15, const v_dt *A16, 
 	const int lda, 
@@ -3575,9 +3575,9 @@ void krnl_trsv(const int uplo, const int transa, const int diag,
 	#pragma HLS INTERFACE m_axi port = A15 offset = slave bundle = gmem16
 	#pragma HLS INTERFACE m_axi port = A16 offset = slave bundle = gmem17
 
-	#pragma HLS INTERFACE s_axilite port = uplo
-	#pragma HLS INTERFACE s_axilite port = transa
-	#pragma HLS INTERFACE s_axilite port = diag
+	#pragma HLS INTERFACE s_axilite port = UpLo
+	#pragma HLS INTERFACE s_axilite port = TransA
+	#pragma HLS INTERFACE s_axilite port = Diag
 	#pragma HLS INTERFACE s_axilite port = K
 	#pragma HLS INTERFACE s_axilite port = lda
 	#pragma HLS INTERFACE s_axilite port = ldb
