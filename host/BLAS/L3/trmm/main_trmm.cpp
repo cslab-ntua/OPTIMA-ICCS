@@ -36,7 +36,7 @@ int main(int argc, const char** argv)
 
 
     MxN_matrix(B,Mnew,Nnew);
-    triangular_NxN_matrix('U',A,Nnew);
+    triangular_NxN_matrix('L',A,Nnew);
 
 
     float alpha=((float) rand()) / (float) RAND_MAX;
@@ -48,11 +48,12 @@ int main(int argc, const char** argv)
 
 
 	for (int i = 0; i < Mnew; i++) {
-		for (int j = i; j < Nnew; j++){
-			B_sw[i*Nnew+j]=0;
+		for (int j = 0; j < Nnew; j++){
+			float sum=0;
 			for (int k=i; k<Mnew;k++){
-				B_sw[i*Nnew+j]=alpha*A[i*Mnew+k]*B[k*Nnew+j];
+				sum += alpha*A[i*Mnew+k]*B[k*Nnew+j];
 			}
+			B_sw[i*Nnew+j] = sum;
 		}
 	}
 
@@ -63,7 +64,7 @@ int main(int argc, const char** argv)
 	std::cout << "It took me " << time_span.count() << " seconds.";
 	std::cout << std::endl;
 
-    OOPS_trmm('L','U',TransA, 'N', Mnew, Nnew, alpha, A, lda, B, ldb, C);
+    OOPS_trmm('L','L',TransA, 'N', Mnew, Nnew, alpha, A, lda, B, ldb, C);
 
    	//verify
    	int match = 0;

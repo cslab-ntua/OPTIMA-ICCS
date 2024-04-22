@@ -124,16 +124,14 @@ void OOPS_gemm(const char TransA, const char TransB, const int M, const int N, c
 
 	// Copy Result from Device Global Memory to Host Local Memory
 	for (int i = 0; i < nstripe; i++){
-		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({buffer_C_out[i]},1));
-		// memcpy(C_out+stripe_start_C[i],_C_out[i], stripe_nrows[i]*N*sizeof(float));
-		memcpy(C+stripe_start_C[i],_C_out[i], stripe_nrows[i]*N*sizeof(float));
-		
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({buffer_C_out[i]},1));	
 	}
 	program_interface.q.finish();
+	for (int i = 0; i < nstripe; i++){
+		memcpy(C+stripe_start_C[i],_C_out[i], stripe_nrows[i]*N*sizeof(float));
+	}
 
 	for (int i = 0; i < nstripe; i++){
 		clReleaseKernel(krnls[i].get());
 	}
 }
-
-

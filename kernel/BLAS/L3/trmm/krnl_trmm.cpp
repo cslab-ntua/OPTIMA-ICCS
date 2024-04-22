@@ -11,7 +11,7 @@ typedef float ValueType;
 #define D 16
 
 #define W 16
-#define TN 32
+#define TN 8
 #define __SYNTHESIS__
 typedef struct v_datatype { ValueType data[W]; } v_dt;
 

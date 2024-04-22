@@ -127,17 +127,18 @@ void OOPS_symm(const char Side, const char Uplo, const int M, const int N, const
 	// Copy Result from Device Global Memory to Host Local Memory
 	for (int i = 0; i < nstripe; i++){
 		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({buffer_C_out[i]},1));
+	}
+	program_interface.q.finish();
+	for (int i = 0; i < nstripe; i++){
 		for(int ii=0; ii<M; ii++){
 			for(int jj=0; jj<stripe_ncols[i]; jj++){
 				C[ii*M + jj + stripe_col_offset[i]] = _C_out[i][ii*stripe_ncols[i] + jj];
 			}
 		}
 	}
-	program_interface.q.finish();
 
 	for (int i = 0; i < nstripe; i++){
 		clReleaseKernel(krnls[i].get());
 	}
 	free(A_triang);
 }
-
