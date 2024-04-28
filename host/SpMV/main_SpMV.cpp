@@ -1,4 +1,24 @@
-void main_SpMV(){
+#include <chrono>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "oops.hpp"
+#include "matrix_vector_generation.hpp"
+#include "test_functions_set.h"
+
+using namespace std;
+
+int main(int argc, const char** argv)
+{
+    if (argc != 2) {
+        std::cout << "Usage: " << argv[0] << " <XCLBIN File>" << std::endl;
+        return EXIT_FAILURE;
+    }
+    
+    printf("----------------------------------------------------------------------------------------------------------------------------------------\n");
+	printf("\n(0) Program the device\n");
+	program_device(argv[1]);
+
     int nrows = 0;
     int nterm = 0;
     int * irow = NULL;
@@ -52,15 +72,31 @@ void main_SpMV(){
     for ( int i = 0; i < nrows; i++)
         b[i] = 0;
 
-    OOPS_SpMV();
+
     OOPS_SpMV(nrows, nterm, iat, ja, coef, x, b);
 
     //verify
     /* ok verified! */
 
     free(x);
-    free(y);
+    free(b);
+    free(irow);
     free(iat);
     free(ja);
     free(coef);
+
+
+	//-------------------------------------------------------------------------------------
+	printf("\n(5) Close OpenCL objects\n");
+	clReleaseProgram(program_interface.program.get());
+	clReleaseContext(program_interface.context.get());
+	clReleaseCommandQueue(program_interface.q.get());
+
+	//-------------------------------------------------------------------------------------
+
+	// End
+	printf("\n");
+
+    return 0;
 }
+

@@ -1,3 +1,5 @@
+#include "test_functions_set.h"
+
 int bin_search(const int ii, int iend, const int *const v)
 {
 	int istart = 0;
@@ -69,6 +71,8 @@ void OOPS_SpMV(const int nrows, const int nterm,
                const long int* iat, const int* ja, const float* __restrict__ coef,
                const float* __restrict__ x, float* __restrict__ b)
 {
+
+	cl_int err;
 	// number of Compute Units to spawn
 	int nstripe = 16;
 	std::vector<cl::Kernel> krnls(nstripe);
@@ -79,13 +83,13 @@ void OOPS_SpMV(const int nrows, const int nterm,
 		std::string cu_id = std::to_string(i + 1);
 		std::string krnl_name_full = krnl_name + ":{" + krnl_name +"_" + cu_id + "}";
 		printf("Creating a kernel [%s] for CU(%d)\n", krnl_name_full.c_str(), i);
-		OCL_CHECK(err, krnls[i] = cl::Kernel(program, krnl_name_full.c_str(), &err));
+		OCL_CHECK(err, krnls[i] = cl::Kernel(program_interface.program, krnl_name_full.c_str(), &err));
 	}
 
 	// allocate padded buffers
 	int padding_factor = 64 / sizeof(float); // 64 is 512-bits, which is the width of the HBM interface
 	// printf("padding_factor = %d\n", padding_factor);
-	nterm_padded = nterm + nrows * padding_factor;
+	int nterm_padded = nterm + nrows * padding_factor;
 	long int * iat_padded  = (long int*) OOPS_malloc((size_t)((nrows+1) * sizeof(long int)));
 	int * ja_padded   = (ColType*) OOPS_malloc((size_t)(nterm_padded * sizeof(ColType)));
 	float * coef_padded = (float*) OOPS_malloc((size_t)(nterm_padded * sizeof(float)));
@@ -357,10 +361,10 @@ void OOPS_SpMV(const int nrows, const int nterm,
 			_b[i]= (float*) OOPS_malloc((size_t)(stripe_nrows[i]*sizeof(float)));
 			// printf("buffer_b[%d] %lf MB\n\n", i, stripe_nrows[i]*sizeof(float)/(1024*1024.0));
 
-			OCL_CHECK(err, buffer_coef[i] = cl::Buffer(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,  stripe_nterm[i]*sizeof(float),  _coef[i], &err));
-			OCL_CHECK(err, buffer_iat[i]  = cl::Buffer(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,  stripe_nterm[i]*sizeof(RowType), _iat[i], &err));
-			OCL_CHECK(err, buffer_x[i]    = cl::Buffer(context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,  stripe_nterm[i]*sizeof(float),     _x[i], &err));
-			OCL_CHECK(err, buffer_b[i]    = cl::Buffer(context, CL_MEM_USE_HOST_PTR | CL_MEM_WRITE_ONLY, stripe_nrows[i]*sizeof(float),     _b[i], &err));
+			OCL_CHECK(err, buffer_coef[i] = cl::Buffer(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,  stripe_nterm[i]*sizeof(float),  _coef[i], &err));
+			OCL_CHECK(err, buffer_iat[i]  = cl::Buffer(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,  stripe_nterm[i]*sizeof(RowType), _iat[i], &err));
+			OCL_CHECK(err, buffer_x[i]    = cl::Buffer(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,  stripe_nterm[i]*sizeof(float),     _x[i], &err));
+			OCL_CHECK(err, buffer_b[i]    = cl::Buffer(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_WRITE_ONLY, stripe_nrows[i]*sizeof(float),     _b[i], &err));
 		}
 	}
 
@@ -377,26 +381,26 @@ void OOPS_SpMV(const int nrows, const int nterm,
 			OCL_CHECK(err, err = krnls[i].setArg(narg++,buffer_x[i]));
 			OCL_CHECK(err, err = krnls[i].setArg(narg++,buffer_b[i]));
 
-			OCL_CHECK(err, err = q.enqueueMigrateMemObjects({buffer_coef[i],buffer_ja[i],buffer_x[i]}, 0));
+			OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({buffer_coef[i],buffer_ja[i],buffer_x[i]}, 0));
 		}
 	}
-	q.finish();
+	program_interface.q.finish();
 	
 	// Launch the Kernel
 	for (int i = 0; i < nstripe; i++){
-		OCL_CHECK(err, err = q.enqueueTask(krnls[i]));
+		OCL_CHECK(err, err = program_interface.q.enqueueTask(krnls[i]));
 	}
-	q.finish();
+	program_interface.q.finish();
 
 	// Copy Result from Device Global Memory to Host Local Memory
 	for (int i = 0; i < nstripe; i++){
-		OCL_CHECK(err, err = q.enqueueMigrateMemObjects({buffer_b[i]},1));
+		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({buffer_b[i]},1));
 		if(stripe_nterm[i]!=0){
 			// printf("i=%d, stripe_nterm = %d\n", i, stripe_nterm[i]);
 			memcpy(b+stripe_start_row[i],_b[i],stripe_nrows[i]*sizeof(float));
 		}
 	}
-	q.finish();
+	program_interface.q.finish();
 
 	for (int i = 0; i < nstripe; i++){
 		clReleaseKernel(krnls[i].get());
