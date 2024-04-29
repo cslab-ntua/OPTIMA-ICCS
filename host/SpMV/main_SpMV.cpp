@@ -1,3 +1,5 @@
+#include <omp.h>
+#include <ctime>
 #include <chrono>
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,7 +8,10 @@
 #include "matrix_vector_generation.hpp"
 #include "test_functions_set.h"
 
+
 using namespace std;
+using namespace std::chrono;
+
 
 int main(int argc, const char** argv)
 {
@@ -16,8 +21,8 @@ int main(int argc, const char** argv)
     }
     
     printf("----------------------------------------------------------------------------------------------------------------------------------------\n");
-	printf("\n(0) Program the device\n");
-	program_device(argv[1]);
+    printf("\n(0) Program the device\n");
+    program_device(argv[1]);
 
     int nrows = 0;
     int nterm = 0;
@@ -64,6 +69,7 @@ int main(int argc, const char** argv)
     // Close file
     file_A_ascii.close();
 
+    // number of columns for this kind of matrices is equal to number of rows
     float * x = (float*) OOPS_malloc(nrows * sizeof(float));
     for (int i=0; i<nrows; i++)
         x[i] = 1.0;
@@ -86,16 +92,16 @@ int main(int argc, const char** argv)
     free(coef);
 
 
-	//-------------------------------------------------------------------------------------
-	printf("\n(5) Close OpenCL objects\n");
-	clReleaseProgram(program_interface.program.get());
-	clReleaseContext(program_interface.context.get());
-	clReleaseCommandQueue(program_interface.q.get());
+    //-------------------------------------------------------------------------------------
+    printf("\n(5) Close OpenCL objects\n");
+    clReleaseProgram(program_interface.program.get());
+    clReleaseContext(program_interface.context.get());
+    clReleaseCommandQueue(program_interface.q.get());
 
-	//-------------------------------------------------------------------------------------
+    //-------------------------------------------------------------------------------------
 
-	// End
-	printf("\n");
+    // End
+    printf("\n");
 
     return 0;
 }

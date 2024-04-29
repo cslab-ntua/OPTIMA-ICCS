@@ -1,4 +1,9 @@
 #include "test_functions_set.h"
+#include "oops.hpp"
+
+#include "ap_int.h"
+typedef ap_uint<1> RowType;
+typedef ap_uint<32>  ColType;
 
 int bin_search(const int ii, int iend, const int *const v)
 {
@@ -23,7 +28,7 @@ inline void SWAP(TYPE &i1, TYPE &i2){TYPE tmp = i1; i1 = i2; i2 = tmp;}
 template void SWAP<int>(int &, int & );
 template void SWAP<float>(float &, float & );
 
-void heapsort_2v(int* __restrict__ x1, float* __restrict__ x2, const int n)
+void heapsort_2v(long int* __restrict__ x1, float* __restrict__ x2, const int n)
 {
 	for (int node = 1; node < n; node ++){
 		int i = node;
@@ -65,10 +70,46 @@ void heapsort_2v(int* __restrict__ x1, float* __restrict__ x2, const int n)
 		}
 	}
 }
+
+void calculate_min_max_mean_std_skew(std::vector<int> stripe_nterm, int nstripe, double *nterm_min, double *nterm_max, double *nterm_avg, double *nterm_std, double *nterm_skew) {
+	// Initialize variables
+	double sum = 0.0;
+	double sum_sq_diff = 0.0;
+	double sum_cub_diff = 0.0;
+	*nterm_min = stripe_nterm[0];
+	*nterm_max = stripe_nterm[0];
+
+	// Calculate min, max, and sum
+	for (int i = 0; i < nstripe; i++) {
+		if (stripe_nterm[i] < *nterm_min) {
+			*nterm_min = stripe_nterm[i];
+		}
+		if (stripe_nterm[i] > *nterm_max) {
+			*nterm_max = stripe_nterm[i];
+		}
+		sum += stripe_nterm[i];
+	}
+
+	// Calculate mean
+	*nterm_avg = sum / nstripe;
+
+	// Calculate sum of squared differences for standard deviation
+	for (int i = 0; i < nstripe; i++) {
+		double diff = stripe_nterm[i] - *nterm_avg;
+		sum_sq_diff += diff * diff;
+		sum_cub_diff += diff * diff * diff;
+	}
+
+	// Calculate standard deviation
+	*nterm_std = sqrt(sum_sq_diff / nstripe);
+
+	// Calculate skewness
+	*nterm_skew = (sum_cub_diff / nstripe) / pow(*nterm_std, 3);
+}
 /****************************************************/
 
 void OOPS_SpMV(const int nrows, const int nterm,
-               const long int* iat, const int* ja, const float* __restrict__ coef,
+               const int* iat, const int* ja, const float* __restrict__ coef,
                const float* __restrict__ x, float* __restrict__ b)
 {
 
@@ -91,7 +132,7 @@ void OOPS_SpMV(const int nrows, const int nterm,
 	// printf("padding_factor = %d\n", padding_factor);
 	int nterm_padded = nterm + nrows * padding_factor;
 	long int * iat_padded  = (long int*) OOPS_malloc((size_t)((nrows+1) * sizeof(long int)));
-	int * ja_padded   = (ColType*) OOPS_malloc((size_t)(nterm_padded * sizeof(ColType)));
+	ColType * ja_padded   = (ColType*) OOPS_malloc((size_t)(nterm_padded * sizeof(ColType)));
 	float * coef_padded = (float*) OOPS_malloc((size_t)(nterm_padded * sizeof(float)));
 
 	/*******************************************************************************************/
@@ -104,7 +145,7 @@ void OOPS_SpMV(const int nrows, const int nterm,
 		irow_padded[i] = -1;
 
 	// allocate scratch buffers
-	int *nt_add = (int*) OOPS_malloc((size_t)(m * sizeof(int)));
+	int *nt_add = (int*) OOPS_malloc((size_t)(nrows * sizeof(int)));
 
 	// get number of new adding for each row
 	for (int i = 0; i < nrows; i++) {
@@ -131,7 +172,7 @@ void OOPS_SpMV(const int nrows, const int nterm,
 		for (int j = 0; j < nt_row; j++) {
 			irow_padded[jj+j] = i;
 			ja_padded_int[jj+j] = ja[iat[i]+j];
-			coef_padded[jj+j] = a[iat[i]+j];
+			coef_padded[jj+j] = coef[iat[i]+j];
 		}
 	}
 
@@ -170,7 +211,7 @@ void OOPS_SpMV(const int nrows, const int nterm,
 	for (int i = nrows-1; i >= nrows/2; i--) {
 		int nt_row = iat[i+1]-iat[i];
 		int icol = i;
-		int icol_right=n-1;
+		int icol_right=nrows-1;
 		for (int j = 0; j < nt_add[i]; j++) {
 			bool find_icol = true;
 			while(find_icol) {
@@ -226,16 +267,18 @@ void OOPS_SpMV(const int nrows, const int nterm,
 	{
 		int j = 0;
 		for ( int i = 0; i < ntermA_wp; i++) {
-		 ja_padded[i].range(0,30) = ja_padded_int[i];
-		 if( irow_padded[i] > j ) {
+			ja_padded[i].range(0,30) = ja_padded_int[i];
+		 	if( irow_padded[i] > j ) {
 				iat_padded[j+1] = i;
 				ja_padded[i-1].range(31,31) = 1;
 				j++;
 			}
+			else{
+				ja_padded[i].range(31,31) = 0;
+			}
 		}
-		ja_padded[i].range(31,31) = 0;
 	}
-	iat_padded[m] = ntermA_wp;
+	iat_padded[nrows] = ntermA_wp;
 	ja_padded[ntermA_wp-1].range(31,31) = 1;
 	nterm_padded=ntermA_wp;
 	
@@ -291,7 +334,7 @@ void OOPS_SpMV(const int nrows, const int nterm,
 		int stripe_id = 0;
 		stripe_start_row[0] = 0;
 		stripe_start_index[0] = 0;
-		for(int i=0; i<m; i++){
+		for(int i=0; i<nrows; i++){
 			// if not in last stripe
 			if(stripe_id < (nstripe-1))
 			{
@@ -381,7 +424,7 @@ void OOPS_SpMV(const int nrows, const int nterm,
 			OCL_CHECK(err, err = krnls[i].setArg(narg++,buffer_x[i]));
 			OCL_CHECK(err, err = krnls[i].setArg(narg++,buffer_b[i]));
 
-			OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({buffer_coef[i],buffer_ja[i],buffer_x[i]}, 0));
+			OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({buffer_coef[i],buffer_iat[i],buffer_x[i]}, 0));
 		}
 	}
 	program_interface.q.finish();
@@ -395,12 +438,14 @@ void OOPS_SpMV(const int nrows, const int nterm,
 	// Copy Result from Device Global Memory to Host Local Memory
 	for (int i = 0; i < nstripe; i++){
 		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({buffer_b[i]},1));
+	}
+	program_interface.q.finish();
+	for (int i = 0; i < nstripe; i++){
 		if(stripe_nterm[i]!=0){
 			// printf("i=%d, stripe_nterm = %d\n", i, stripe_nterm[i]);
 			memcpy(b+stripe_start_row[i],_b[i],stripe_nrows[i]*sizeof(float));
 		}
 	}
-	program_interface.q.finish();
 
 	for (int i = 0; i < nstripe; i++){
 		clReleaseKernel(krnls[i].get());
@@ -413,6 +458,5 @@ void OOPS_SpMV(const int nrows, const int nterm,
 	for(int i = 0; i < nstripe; i++){
 		free(_coef[i]);
 		free(_b[i]);
-		free(_ja[i]);
 	}
 }
