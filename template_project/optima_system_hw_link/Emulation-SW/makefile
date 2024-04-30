@@ -4,10 +4,8 @@ RMDIR = rm -rf
 
 VPP_OPTS = --target sw_emu
 
-# BINARY_CONTAINERS += binary_container_1.xclbin
 BINARY_CONTAINERS += ${BIN_CONT_NAME}.xclbin
 
-# BUILD_SUBDIRS += binary_container_1.build
 BUILD_SUBDIRS += ${BIN_CONT_NAME}.build
 BINARY_CONTAINER_1_OBJS += ../../$(PROJECT_NAME)_kernels/$(TARGET)/build/$(KRNL_NAME).xo
 

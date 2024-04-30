@@ -1,19 +1,42 @@
+#!/bin/bash
 # export BUILD=Hardware
+if [ $# -lt 1 ]; then
+  echo "Expected at least 1 argument but found $#."
+  echo "The absolute necessary argument is -c=*|--cus=*"
+
+  exit 1
+fi
+
+for i in "$@"; do
+      case $i in
+            -c=*|--cus=*)
+                CU_NUM="${i#*=}"
+                shift # past argument=value
+                ;;
+            -*|--*)
+                echo "Unknown option $i"
+                exit 1
+                ;;
+            *)
+                echo "Unknown option $i"
+                exit 1
+                  ;;
+            esac
+done
+
+
+
 export BUILD=Emulation-SW
 export XCL_EMULATION_MODE=sw_emu
-
+# export BUILD=Hardware
 export PROJECT=optima
-export CU=8
 
-# export M_sizes='128' # For Emulation-SW
-export M_sizes='1024 2048 4096 8192' # For Hardware
+BIN_CONT_FILE=$(find ./${PROJECT}/${BUILD}/ -type f -name "*${CU_NUM}.xclbin")
+if [ -z "$BIN_CONT_FILE" ]
+then
+      echo "Error: Cannot find proper xclbin file in ./${PROJECT}/${BUILD} path!"
+      exit 1
+fi
 
-export OMP_NUM_THREADS="14"
-export DEV_ID="0000:0a:00.1"
-for M in $M_sizes; do
-    export K=${M}
-    export N=${M}
-    export alpha="1.2"
-    export beta="0.5"
-    ./${PROJECT}/${BUILD}/${PROJECT}_${CU} ./${PROJECT}/${BUILD}/binary_container_1_CU${CU}.xclbin ${M} ${K} ${N} ${alpha} ${beta}
-done
+./${PROJECT}/${BUILD}/${PROJECT}_${CU_NUM} ${BIN_CONT_FILE}
+

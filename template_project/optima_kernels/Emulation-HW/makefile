@@ -2,7 +2,7 @@ VPP ?= ${XILINX_VITIS}/bin/v++
 RM = rm -f
 RMDIR = rm -rf
 
-VPP_OPTS = --target hw
+VPP_OPTS = --target hw_emu
 
 BUILD_SUBDIRS += build
 HW_KERNEL_OBJS += build/$(KRNL_NAME).xo

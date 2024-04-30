@@ -11,6 +11,7 @@ fi
 CU_NUM=16
 PLATFORM=u55
 TARGET=Emulation-SW
+# TARGET=Hardware
 BACKCUP=FALSE
 export PROJECT_NAME=optima
 export XCL_EMULATION_MODE=sw_emu
@@ -134,14 +135,14 @@ cd ../../${PROJECT_NAME}_system_hw_link/$TARGET
 echo -e "\n-------------------------------------"
 echo -e "-------------------------------------"
 echo "Building hw link"
-make clean PROJECT_NAME=${PROJECT_NAME}
+make clean PROJECT_NAME=${PROJECT_NAME} BIN_CONT_NAME=${BIN_CONT_NAME}
 make all CU=${CU_NUM} PROJECT_NAME=${PROJECT_NAME} XILINX_VITIS=${XILINX_VITIS} XILINX_XRT=${XILINX_XRT} XILINX_VIVADO=${XILINX_VIVADO} XILINX_VITIS_HLS=${XILINX_VITIS_HLS} VITIS_PLATFORM=${VITIS_PLATFORM} TARGET=${TARGET} KRNL_NAME=${KRNL_NAME} KRNL_LINK_CFG=${KRNL_LINK_CFG} BIN_CONT_NAME=${BIN_CONT_NAME}
 
 cd ../../${PROJECT_NAME}_system/$TARGET
 echo -e "\n-------------------------------------"
 echo -e "-------------------------------------"
 echo "Building final wrap-up of system"
-make clean PROJECT_NAME=${PROJECT_NAME}
+make clean PROJECT_NAME=${PROJECT_NAME} BIN_CONT_NAME=${BIN_CONT_NAME}
 make all CU=${CU_NUM} PROJECT_NAME=${PROJECT_NAME} XILINX_VITIS=${XILINX_VITIS} XILINX_XRT=${XILINX_XRT} XILINX_VIVADO=${XILINX_VIVADO} XILINX_VITIS_HLS=${XILINX_VITIS_HLS} VITIS_PLATFORM=${VITIS_PLATFORM} TARGET=${TARGET} BIN_CONT_NAME=${BIN_CONT_NAME}
 
 cd ../../

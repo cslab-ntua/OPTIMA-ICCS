@@ -2,7 +2,7 @@ VPP_LINKER ?= ${XILINX_VITIS}/bin/v++
 RM = rm -f
 RMDIR = rm -rf
 
-VPP_OPTS = --target hw
+VPP_OPTS = --target hw_emu
 
 BINARY_CONTAINERS += ${BIN_CONT_NAME}.xclbin
 
