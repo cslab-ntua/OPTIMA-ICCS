@@ -86,7 +86,6 @@ int main(int argc, const char** argv)
 
     free(x);
     free(b);
-    free(irow);
     free(iat);
     free(ja);
     free(coef);

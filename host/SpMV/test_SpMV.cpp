@@ -288,10 +288,10 @@ void OOPS_SpMV(const int nrows, const int nterm,
 	/*******************************************************************************************/
 	float* x_stream;
 	RowType* iatbit;
-	iatbit = (RowType*) OOPS_malloc((size_t)(nterm*sizeof(RowType)));
-	x_stream = (float*) OOPS_malloc((size_t)(nterm*sizeof(float)));
+	iatbit = (RowType*) OOPS_malloc((size_t)(nterm_padded*sizeof(RowType)));
+	x_stream = (float*) OOPS_malloc((size_t)(nterm_padded*sizeof(float)));
 	ColType col;
-	for(int i = 0; i < nterm; i++) {
+	for(int i = 0; i < nterm_padded; i++) {
 		col = ja_padded[i].range(0,30);
 		iatbit[i] = ja_padded[i].range(31,31);
 		x_stream[i] = x[col];
@@ -319,7 +319,7 @@ void OOPS_SpMV(const int nrows, const int nterm,
 			stripe_start_index[i]  = iat_padded[stripe_start_row[i]];
 		}
 		stripe_nterm[i] = iat_padded[stripe_start_row[i]+stripe_nrows[i]] - stripe_start_index[i];
-		printf("ROW_BAL: stripe = %d\tnrows = %d\tnterm = %d\n", i, stripe_nrows[i], stripe_nterm[i]);
+		printf("ROW_BAL: stripe = %d\tnrows = %d\tnterm = %d\tstripe_start_index = %d\n", i, stripe_nrows[i], stripe_nterm[i], stripe_start_index[i]);
 	}
 	double nterm_min, nterm_max, nterm_avg, nterm_std, nterm_skew;
 	calculate_min_max_mean_std_skew(stripe_nterm, nstripe, &nterm_min, &nterm_max, &nterm_avg, &nterm_std, &nterm_skew);
@@ -431,25 +431,28 @@ void OOPS_SpMV(const int nrows, const int nterm,
 	
 	// Launch the Kernel
 	for (int i = 0; i < nstripe; i++){
-		OCL_CHECK(err, err = program_interface.q.enqueueTask(krnls[i]));
+		if(stripe_nterm[i]!=0){
+			OCL_CHECK(err, err = program_interface.q.enqueueTask(krnls[i]));
+		}
 	}
 	program_interface.q.finish();
 
 	// Copy Result from Device Global Memory to Host Local Memory
 	for (int i = 0; i < nstripe; i++){
-		OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({buffer_b[i]},1));
+		if(stripe_nterm[i]!=0){
+			OCL_CHECK(err, err = program_interface.q.enqueueMigrateMemObjects({buffer_b[i]},1));
+		}
 	}
 	program_interface.q.finish();
 	for (int i = 0; i < nstripe; i++){
 		if(stripe_nterm[i]!=0){
-			// printf("i=%d, stripe_nterm = %d\n", i, stripe_nterm[i]);
 			memcpy(b+stripe_start_row[i],_b[i],stripe_nrows[i]*sizeof(float));
 		}
 	}
 
-	for (int i = 0; i < nstripe; i++){
-		clReleaseKernel(krnls[i].get());
-	}
+	// for (int i = 0; i < nstripe; i++){
+	// 	clReleaseKernel(krnls[i].get());
+	// }
 
 	free(iat_padded);
 	free(ja_padded);
