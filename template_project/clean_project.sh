@@ -12,6 +12,10 @@ cd optima/Emulation-SW
 find . -type f -not \( -name 'makefile' -or -name 'xrt.ini' \) -delete
 find . -type d -delete
 
+cd ../Emulation-HW
+find . -type f -not \( -name 'makefile' -or -name 'xrt.ini' \) -delete
+find . -type d -delete
+
 cd ../Hardware
 find . -type f -not \( -name 'makefile' -or -name 'xrt.ini' \) -delete
 find . -type d -delete
@@ -24,6 +28,10 @@ cd ../../
 
 #clean optima_kernels folder
 cd optima_kernels/Emulation-SW
+find . -type f -not -name 'makefile' -delete
+find . -type d -delete
+
+cd ../Emulation-HW
 find . -type f -not -name 'makefile' -delete
 find . -type d -delete
 
@@ -41,6 +49,10 @@ cd optima_system/Emulation-SW
 find . -type f -not -name 'makefile' -delete
 find . -type d -delete
 
+cd ../Emulation-HW
+find . -type f -not -name 'makefile' -delete
+find . -type d -delete
+
 cd ../Hardware
 find . -type f -not -name 'makefile' -delete
 find . -type d -delete
@@ -49,6 +61,10 @@ cd ../../
 
 #clear optima_system_hw_link
 cd optima_system_hw_link/Emulation-SW
+find . -type f -not -name 'makefile' -delete
+find . -type d -delete
+
+cd ../Emulation-HW
 find . -type f -not -name 'makefile' -delete
 find . -type d -delete
 

@@ -14,7 +14,7 @@ TARGET=Emulation-SW
 # TARGET=Hardware
 BACKCUP=FALSE
 export PROJECT_NAME=optima
-export XCL_EMULATION_MODE=sw_emu
+# export XCL_EMULATION_MODE=sw_emu
 
 
 for i in "$@"; do
@@ -38,7 +38,7 @@ for i in "$@"; do
                 ;;
             -t=*|--target=*)
                 TARGET=${i#*=}
-                if [[ "$TARGET" != "Emulation-SW" || "$TARGET" != "Emulation-HW" || "$TARGET" != "Hardware" ]]
+                if [[ "$TARGET" != "Emulation-SW" && "$TARGET" != "Emulation-HW" && "$TARGET" != "Hardware" ]]
                 then
                     echo "Error: The specified compilation target ${TARGET} is not suported!"
                     exit 1

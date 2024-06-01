@@ -13,6 +13,15 @@ for i in "$@"; do
                 CU_NUM="${i#*=}"
                 shift # past argument=value
                 ;;
+            -t=*|--target=*)
+                TARGET=${i#*=}
+                if [[ "$TARGET" != "Emulation-SW" && "$TARGET" != "Emulation-HW" && "$TARGET" != "Hardware" ]]
+                then
+                    echo "Error: The specified compilation target ${TARGET} is not suported!"
+                    exit 1
+                fi
+                shift  # past argument=value
+                ;;
             -*|--*)
                 echo "Unknown option $i"
                 exit 1
@@ -25,9 +34,18 @@ for i in "$@"; do
 done
 
 
+if [[ "$TARGET" == "Emulation-SW" ]]
+then
+  export BUILD=Emulation-SW
+  export XCL_EMULATION_MODE=sw_emu
+elif [[ "$TARGET" == "Emulation-HW" ]]
+then
+  export BUILD=Emulation-HW
+  export XCL_EMULATION_MODE=hw_emu
+else
+  export BUILD=Hardware
+fi
 
-export BUILD=Emulation-SW
-export XCL_EMULATION_MODE=sw_emu
 # export BUILD=Hardware
 export PROJECT=optima
 
