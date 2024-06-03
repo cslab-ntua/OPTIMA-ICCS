@@ -31,23 +31,17 @@ void OOPS_spmv(const char Uplo,const char Diag,const int N, const float  *AP, co
 		matrix_prt_sBytes[7] = (total_vds_blks - break_vds_blk_idx[7]) * V_DATA_SIZE * sizeof(float);
 		out_vec_prt_sBytes[7] = sizeof(float) * (N - break_row[7]) * incX;
 
-	 	for(int i = 0; i < 8; i++){
-	 		std::cout << "break_row[" << i <<"]: " << break_row[i] << std::endl;
-	 		std::cout << "break_vds_blk_idx["<< i <<"]: " << break_vds_blk_idx[i] << std::endl;
-			std::cout << "matrix_prt_sBytes["<< i <<"]: "<< matrix_prt_sBytes[i] << std::endl;
-			std::cout << "out_vec_prt_sBytes["<< i <<"]: " << out_vec_prt_sBytes[i] << std::endl;
 
-	 	}
 
 	 	cl::Kernel krnl;
-	    std::cout << "1." << std::endl;
+
 		OCL_CHECK(err, krnl= cl::Kernel (program_interface.program,"krnl_spmv", &err));
 
 
 
 
 	    // Allocate Buffer in Global Memory
-		std::cout << "1.1" << std::endl;
+
 		OCL_CHECK(err, cl::Buffer Sx1(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, input_vector_size_bytes,
 					                                           (void *) X, &err));
 		OCL_CHECK(err, cl::Buffer Sx2(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, input_vector_size_bytes,
@@ -84,7 +78,7 @@ void OOPS_spmv(const char Uplo,const char Diag,const int N, const float  *AP, co
 
 
 		/*-----------------------------------------------------------------------------------------------------*/
-	    std::cout << "1.2" << std::endl;
+	 
 
 	    OCL_CHECK(err, cl::Buffer Sa1(program_interface.context, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, matrix_prt_sBytes[0],
 	    	    	                                             (void *) AhyperPacked, &err));

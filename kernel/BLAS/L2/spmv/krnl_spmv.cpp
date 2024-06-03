@@ -12,7 +12,7 @@ typedef struct v_datatype { float data[VDATA_SIZE]; } v_dt;
 void read_x_Rows1(const v_dt *X, hls::stream<v_dt>& XstreamRows, const int N, const int start_row, const int end_row){
 
 	int i=0,j=start_row>>4;
-	printf("read_x_Rows1 \n");
+
 	read_X_rows:
 	while(i<end_row){
 		#pragma HLS pipeline II=1
@@ -34,7 +34,7 @@ void read_x_Rows1(const v_dt *X, hls::stream<v_dt>& XstreamRows, const int N, co
 void read_x_Rows2(const v_dt *X, hls::stream<v_dt>& XstreamRows, const int N, const int start_row, const int end_row){
 
 	int i=0,j=start_row>>4;
-	printf("!!!read_x_Rows2 \n");
+
 	read_X_rows:
 	while(i<end_row){
 		#pragma HLS pipeline II=1
@@ -57,7 +57,7 @@ void read_x_Rows2(const v_dt *X, hls::stream<v_dt>& XstreamRows, const int N, co
 void read_x_Rows3(const v_dt *X, hls::stream<v_dt>& XstreamRows, const int N, const int start_row, const int end_row){
 
 	int i=0,j=start_row>>4;
-	printf("!!!read_x_Rows2 \n");
+
 	read_X_rows:
 	while(i<end_row){
 		#pragma HLS pipeline II=1
@@ -80,7 +80,7 @@ void read_x_Rows3(const v_dt *X, hls::stream<v_dt>& XstreamRows, const int N, co
 void read_x_Rows4(const v_dt *X, hls::stream<v_dt>& XstreamRows, const int N, const int start_row, const int end_row){
 
 	int i=0,j=start_row>>4;
-	printf("!!!read_x_Rows2 \n");
+
 	read_X_rows:
 	while(i<end_row){
 		#pragma HLS pipeline II=1
@@ -103,7 +103,7 @@ void read_x_Rows4(const v_dt *X, hls::stream<v_dt>& XstreamRows, const int N, co
 void read_x_Rows5(const v_dt *X, hls::stream<v_dt>& XstreamRows, const int N, const int start_row, const int end_row){
 
 	int i=0,j=start_row>>4;
-	printf("read_x_Rows1 \n");
+
 	read_X_rows:
 	while(i<end_row){
 		#pragma HLS pipeline II=1
@@ -125,7 +125,7 @@ void read_x_Rows5(const v_dt *X, hls::stream<v_dt>& XstreamRows, const int N, co
 void read_x_Rows6(const v_dt *X, hls::stream<v_dt>& XstreamRows, const int N, const int start_row, const int end_row){
 
 	int i=0,j=start_row>>4;
-	printf("!!!read_x_Rows2 \n");
+
 	read_X_rows:
 	while(i<end_row){
 		#pragma HLS pipeline II=1
@@ -148,7 +148,7 @@ void read_x_Rows6(const v_dt *X, hls::stream<v_dt>& XstreamRows, const int N, co
 void read_x_Rows7(const v_dt *X, hls::stream<v_dt>& XstreamRows, const int N, const int start_row, const int end_row){
 
 	int i=0,j=start_row>>4;
-	printf("!!!read_x_Rows2 \n");
+
 	read_X_rows:
 	while(i<end_row){
 		#pragma HLS pipeline II=1
@@ -171,7 +171,7 @@ void read_x_Rows7(const v_dt *X, hls::stream<v_dt>& XstreamRows, const int N, co
 void read_x_Rows8(const v_dt *X, hls::stream<v_dt>& XstreamRows, const int N, const int start_row, const int end_row){
 
 	int i=0,j=start_row>>4;
-	printf("!!!read_x_Rows2 \n");
+
 	read_X_rows:
 	while(i<end_row){
 		#pragma HLS pipeline II=1
@@ -194,7 +194,7 @@ void read_x_Rows8(const v_dt *X, hls::stream<v_dt>& XstreamRows, const int N, co
 /******************************** READ Y SCAL BETA ********************************************/
 
 void read_y_scal_beta1( float *Y, const float beta, hls::stream<float>& ScalYBeta, const int end_row){
-	printf("read_y_scal_beta1 \n");
+
 
 
 	read_y:
@@ -206,7 +206,7 @@ void read_y_scal_beta1( float *Y, const float beta, hls::stream<float>& ScalYBet
 }
 
 void read_y_scal_beta2( float *Y, const float beta, hls::stream<float>& ScalYBeta, const int end_row){
-	printf("read_y_scal_beta2 \n");
+
 
 
 	read_y:
@@ -218,7 +218,7 @@ void read_y_scal_beta2( float *Y, const float beta, hls::stream<float>& ScalYBet
 }
 
 void read_y_scal_beta3( float *Y, const float beta, hls::stream<float>& ScalYBeta, const int end_row){
-	printf("read_y_scal_beta2 \n");
+
 
 
 	read_y:
@@ -230,7 +230,7 @@ void read_y_scal_beta3( float *Y, const float beta, hls::stream<float>& ScalYBet
 }
 
 void read_y_scal_beta4( float *Y, const float beta, hls::stream<float>& ScalYBeta, const int end_row){
-	printf("read_y_scal_beta2 \n");
+
 
 
 	read_y:
@@ -243,7 +243,7 @@ void read_y_scal_beta4( float *Y, const float beta, hls::stream<float>& ScalYBet
 
 
 void read_y_scal_beta5( float *Y, const float beta, hls::stream<float>& ScalYBeta, const int end_row){
-	printf("read_y_scal_beta1 \n");
+
 
 
 	read_y:
@@ -255,7 +255,7 @@ void read_y_scal_beta5( float *Y, const float beta, hls::stream<float>& ScalYBet
 }
 
 void read_y_scal_beta6( float *Y, const float beta, hls::stream<float>& ScalYBeta, const int end_row){
-	printf("read_y_scal_beta6 \n");
+
 
 
 	read_y:
@@ -267,7 +267,7 @@ void read_y_scal_beta6( float *Y, const float beta, hls::stream<float>& ScalYBet
 }
 
 void read_y_scal_beta7( float *Y, const float beta, hls::stream<float>& ScalYBeta, const int end_row){
-	printf("read_y_scal_beta7 \n");
+
 
 
 	read_y:
@@ -279,7 +279,6 @@ void read_y_scal_beta7( float *Y, const float beta, hls::stream<float>& ScalYBet
 }
 
 void read_y_scal_beta8( float *Y, const float beta, hls::stream<float>& ScalYBeta, const int end_row){
-	printf("read_y_scal_beta2 \n");
 
 
 	read_y:
@@ -546,7 +545,7 @@ void accum_rows2(hls::stream<v_dt>& In,hls::stream<v_dt>& Out,const int N, const
 }
 
 void accum_rows3(hls::stream<v_dt>& In,hls::stream<v_dt>& Out,const int N, const int start_row, const int end_row, const int vds_blk_str_idx, const int vds_blk_end_idx  ){
-	printf("accum_rows3 \n");
+
 
 	int row_blk16_idx_limit = ((N-start_row-1)>>4) + 1 + vds_blk_str_idx ;
 	int row_limit_incr = 0;
@@ -1185,7 +1184,7 @@ void read_x_Cols4(const v_dt *X, hls::stream<v_dt>& XstreamCols, const int N, co
 	}
 }
 void read_x_Cols5(const v_dt *X, hls::stream<v_dt>& XstreamCols, const int N, const int start_row, const int end_row){
-	printf("read_x_Cols5 \n");
+
 	int i=start_row;
 	int k=0;
 	int innerLoop = 0;
