@@ -77,3 +77,10 @@ void OOPS_trsm(const char Side, const char Uplo, const  char TransA, const char 
 void OOPS_SpMV(const int nrows, const int nterm,
                const int* iat, const int* ja, const float* __restrict__ coef,
                const float* __restrict__ x, float* __restrict__ b);
+
+
+/********** CAE ********************/
+
+void OOPS_jacobi( const int N, float *X, float *Y);
+
+bool OOPS_lu(float *L, float *U, int N);

@@ -1,102 +1,26 @@
 #include "oops.hpp"
 #include "matrix_vector_generation.hpp"
-#include <ctime>
-#include <chrono>
+#include "test_functions_set.h"
 
+using namespace std;
 using namespace std::chrono;
 
-size_t OOPS_align_bytes(size_t bytesToAlign) {
-	int rem = bytesToAlign % 64;
-	return (rem == 0) ? bytesToAlign : bytesToAlign + 64 - rem;
-}
 
-int roundUpToMultiple(int number, int multiple){
-	int rem = number % multiple;
-	return (rem == 0) ? number : number + multiple - rem;
-}
+int main(int argc, const char** argv)
+{
+    if (argc != 2) {
+        std::cout << "Usage: " << argv[0] << " <XCLBIN File>" << std::endl;
+        return EXIT_FAILURE;
+    }
+    
+    printf("----------------------------------------------------------------------------------------------------------------------------------------\n");
+	printf("\n(0) Program the device\n");
+	program_device(argv[1]);
 
-void printMatrix(float *m, string name, int N) {
-	std::cout << "LU: " << name << std::endl;
-	for (int i=0;i<N;i++) {
-		for (int j=0;j<N;j++) {
-			printf("%08f\t",m[i*N+j]);
-		}
-		std::cout << std::endl;
-	}
-}
-
-void printMatrix1d(float *m, string name, int N) {
-	std::cout << "LU: " << name << std::endl;
-	for (int i=0;i<N;i++) {
-		printf("%08f\t",m[i]);
-	}
-	std::cout << std::endl;
-}
-
-void printPaddedMatrix1d(float *m, string name, int N, int paddedWidth) {
-	std::cout << "LU: " << name << std::endl;
-	for (int i=0;i<N;i++) {
-		if (i%paddedWidth == 0) {
-			printf("\n");
-		}
-		printf("%08f\t",m[i]);
-	}
-	std::cout << std::endl;
-}
-
-int luRowDistribution(int N, int plEngines, int *rowsPerPlEngine) {
-	int peRows = 0, lastPeRows = 0, rowsDiff = 0, maxRows = 0;
-
-	memset(&rowsPerPlEngine[0],0,plEngines*sizeof(int));
-
-	peRows = (int)(floor((float)N / (float)plEngines));
-	lastPeRows = N - (plEngines-1)*peRows;
-
-	for (int i=0;i<plEngines-1;i++) {
-		rowsPerPlEngine[i] = peRows;
-	}
-	rowsPerPlEngine[plEngines-1] = lastPeRows;
-
-	rowsDiff = lastPeRows - peRows;
-
-	if (rowsDiff > 0) {
-		lastPeRows = lastPeRows - rowsDiff;
-		rowsPerPlEngine[plEngines-1] = lastPeRows;
-
-		for (int i=0;i<rowsDiff;i++) {
-			rowsPerPlEngine[i]++;
-		}
-	}
-
-	for (int i=0;i<plEngines;i++) {
-		if (maxRows < rowsPerPlEngine[i]) {
-			maxRows = rowsPerPlEngine[i];
-		}
-	}
-
-	return maxRows;
-
-}
-
-void printMatrix2(float *m, string name, int r, int c) {
-	std::cout << "LU: " << name << "(" << r << "x" << c << ")" << std::endl;
-	for (int i=0;i<r;i++) {
-		for (int j=0;j<c;j++) {
-			printf("%08f\t",m[i*c+j]);
-		}
-		std::cout << std::endl;
-	}
-}
-
-
-bool main_lu(const int N){
+	int N=256;
 	int incX=1;
     float* A, *L, *L_sw, *U, *U_sw;
-    duration<double> *krnlTime, *memCpyTime,*h2dTime, *mallocTime;
-    krnlTime = (duration<double> *)OOPS_malloc(sizeof(duration<double>));
-    memCpyTime = (duration<double> *)OOPS_malloc(sizeof(duration<double>));
-    h2dTime = (duration<double> *)OOPS_malloc(sizeof(duration<double>));
-    mallocTime = (duration<double> *)OOPS_malloc(sizeof(duration<double>));
+    
     int matrixSize = N*N;
 
     A= (float *)OOPS_malloc(sizeof(float)*matrixSize*incX);
@@ -132,18 +56,11 @@ bool main_lu(const int N){
 	}
 
 
-    if (N == 4) {
-    	A[0] = 2.0f; 	A[1] = 4.0f; 	A[2] = 3.0f; 	A[3] = 5.0f;
-		A[4] = -4.0f; 	A[5] = -7.0f; 	A[6] = -5.0f; 	A[7] = -8.0f;
-		A[8] = 6.0f; 	A[9] = 8.0f; 	A[10] = 2.0f; 	A[11] = 9.0f;
-		A[12] = 4.0f; 	A[13] = 9.0f; 	A[14] = -2.0f; 	A[15] = 14.0f;
-    }
-    else {
-    	vector_N(A,matrixSize,incX);
-    }
+	vector_N(A,matrixSize,incX);
 
 
-    //printMatrix(A,"A",N);
+
+
 
     memcpy(&U_sw[0],&A[0],sizeof(float)*matrixSize*incX);
     for (int i=0;i<N;i++) {
@@ -154,14 +71,10 @@ bool main_lu(const int N){
     memcpy(&U[0],&A[0],sizeof(float)*matrixSize*incX);
 	memcpy(&L[0],&L_sw[0],sizeof(float)*matrixSize*incX);
 
-	//printMatrix(L_sw,"L_sw",N);
-	//printMatrix(U_sw,"U_sw",N);
-	//printMatrix(L,"L",N);
-	//printMatrix(U,"U",N);
 
 	std::cout << "LU: software started (N = " << N << ").." << endl;
 
-    high_resolution_clock::time_point swStart = high_resolution_clock::now();
+
     float pivot = 0.0f, x = 0.0f;
     int pivotRow = 0;
 
@@ -180,32 +93,10 @@ bool main_lu(const int N){
 		}
 	}
 
-    high_resolution_clock::time_point swEnd = high_resolution_clock::now();
-
-    duration<double> swDuration = duration_cast<duration<double>>(swEnd - swStart);
-
-    std::cout << "N = " << N << endl << "LU: swDuration = " << swDuration.count()*1000 << " msec" << std::endl;
-    std::cout << "ops = " << ops << endl;
-
-    //printMatrix(U_sw,"U_sw",N);
-
-    high_resolution_clock::time_point hwStart = high_resolution_clock::now();    
-    OOPS_lu(L, U, N, mallocTime,krnlTime,memCpyTime,h2dTime);
 
 
-    high_resolution_clock::time_point hwEnd = high_resolution_clock::now();
+    OOPS_lu(L, U, N); //OOPS_lu3d15df_b
 
-    duration<double> hwDuration = duration_cast<duration<double>>(hwEnd - hwStart);
-    //duration<double> mallocDuration = *mallocTime;
-    //hwDuration = hwDuration - mallocDuration;
-
-
-	std::cout << "LU: hwDuration = " << hwDuration.count()*1000 << " msec" << std::endl;
-
-	//printMatrix(L_sw,"L_sw",N);
-	//printMatrix(L,"L_hw",N);
-	//printMatrix(U_sw,"U_sw",N);
-	//printMatrix(U,"U_hw",N);
 
 
 	int match = 1;
@@ -228,11 +119,7 @@ bool main_lu(const int N){
 	}
 
 	std::cout << "LU: TEST " << (match ? "PASSED" : "FAILED") << std::endl;
-	if (match == 1){
-		std::cout << "LU: N = " << N << " (" << (N*N*sizeof(float))/(1024*1024) << " MB), hardware speedup: " << (swDuration.count() / (*krnlTime).count()) << "x" << std::endl;
-		std::cout << "LU: sw = " << swDuration.count()*1000 << " msec, hw kernel = " << (*krnlTime).count()*1000 << " msec, total hw = " << hwDuration.count()*1000 << " msec" << std::endl;
-		std::cout << "LU: memCpyTime = " << (*memCpyTime).count()*1000 << " msec, h2dTime = " << (*h2dTime).count()*1000 << " msec" << std::endl;
-	}
+
 
 
     free(A);
@@ -240,9 +127,20 @@ bool main_lu(const int N){
     free(L_sw);
     free(U);
     free(U_sw);
+  	
+	//-------------------------------------------------------------------------------------
+	printf("\n(5) Close OpenCL objects\n");
+	clReleaseProgram(program_interface.program.get());
+	clReleaseContext(program_interface.context.get());
+	clReleaseCommandQueue(program_interface.q.get());
 
-    return (match == 1);
+	//-------------------------------------------------------------------------------------
+
+	// End
+	printf("\n");
+
+    return 0;
+
+
 }
-
-
 

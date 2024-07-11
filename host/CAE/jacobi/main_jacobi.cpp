@@ -1,9 +1,28 @@
 
-void main_jacobi(int N, int NCUs){
+
+#include "oops.hpp"
+#include "matrix_vector_generation.hpp"
+#include "test_functions_set.h"
+
+using namespace std;
+using namespace std::chrono;
+
+
+int main(int argc, const char** argv)
+{
+    if (argc != 2) {
+        std::cout << "Usage: " << argv[0] << " <XCLBIN File>" << std::endl;
+        return EXIT_FAILURE;
+    }
+    
+    printf("----------------------------------------------------------------------------------------------------------------------------------------\n");
+	printf("\n(0) Program the device\n");
+	program_device(argv[1]);
+
+    int N=128;
 	int incX=1;
     float* A, *M, *M_sw;
-    duration<double> *krnlTime;
-    krnlTime = (duration<double> *)OOPS_malloc(sizeof(duration<double>));
+
     int matrixSize = N*N;
 
     A= (float *)OOPS_malloc(sizeof(float)*matrixSize*incX);
@@ -12,38 +31,22 @@ void main_jacobi(int N, int NCUs){
 
     diagonal_N(A,N);
 
-    //printMatrix(A,"A",N);
+
 
     for (int i=0;i<matrixSize;i++) {
     	M[i] = 0.0f;
     	M_sw[i] = 0.0f;
     }
 
-    high_resolution_clock::time_point swStart = high_resolution_clock::now();
+
 
     for (int i=0;i<matrixSize;i=i+N+1) {
     	A[i] != 0.0f ? M_sw[i] = 1.0f / A[i] : M_sw[i] = 0.0f;
     }
-    high_resolution_clock::time_point swEnd = high_resolution_clock::now();
+ 
 
-    duration<double> swDuration = duration_cast<duration<double>>(swEnd - swStart);
-
-    //printMatrix(M_sw,"M_sw",N);
-
-    high_resolution_clock::time_point hwStart = high_resolution_clock::now();
-    OOPS_jacobi( N, A, M,krnlTime);
-    high_resolution_clock::time_point hwEnd = high_resolution_clock::now();
-
-    duration<double> hwDuration = duration_cast<duration<double>>(hwEnd - hwStart);
-
-    /*std::cout << "JACOBI: Matrix M:" << std::endl;
-	for (int i=0;i<N;i++) {
-		for (int j=0;j<N;j++) {
-			std::cout << M[i*N+j] << " ";
-		}
-		std::cout << std::endl;
-	}*/
-
+     OOPS_jacobi( N, A, M);
+ 
     int match = 1;
 	for(int i=0;i<matrixSize;i++){
 		if(abs(M_sw[i]-M[i])>0.1){
@@ -56,13 +59,25 @@ void main_jacobi(int N, int NCUs){
 
 	std::cout << "JACOBI: TEST " << (match ? "PASSED" : "FAILED") << std::endl;
 	if (match == 1){
-		std::cout << "JACOBI: N = " << N << " (" << (N*N*sizeof(float))/(1024*1024) << " MB), hardware speedup: " << (swDuration.count() / (*krnlTime).count()) << "x" << std::endl;
-		std::cout << "JACOBI: sw = " << swDuration.count()*1000 << " msec, hw kernel = " << (*krnlTime).count()*1000 << " msec, mem transfer = " << (hwDuration.count() - (*krnlTime).count())*1000 << " msec" << std::endl;
-	}
+		std::cout << "JACOBI: N = " << N << " (" << (N*N*sizeof(float))/(1024*1024) << " MB) "  << std::endl;
+		}
 
     free(A);
     free(M);
     free(M_sw);
+
+    //-------------------------------------------------------------------------------------
+	printf("\n(5) Close OpenCL objects\n");
+	clReleaseProgram(program_interface.program.get());
+	clReleaseContext(program_interface.context.get());
+	clReleaseCommandQueue(program_interface.q.get());
+
+	//-------------------------------------------------------------------------------------
+
+	// End
+	printf("\n");
+
+    return 0;
+
+
 }
-
-

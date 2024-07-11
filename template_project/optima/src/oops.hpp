@@ -43,6 +43,22 @@ int OOPS_cmpt_hyperpacked_triang_mtrx_blks(int N, int VDATA_SIZE);
 int OOPS_Hpacked_triMtx_start_idx(int N, int VDATA_SIZE, int row);
 int OOPS_Hpacked_triMtx_end_idx(int N, int VDATA_SIZE, int row);
 
+// extra functions for Jacobi
+void printMatrix1d(float *m, string name, int N);
+void printMatrix(float *m, string name, int N);
+int rowDistribution(int N, int plEngines, int *rowsPerPlEngine);
+
+//extra functions for LU
+
+void printDiagPaddedMatrix(float *m, string name, int N, int vdt);
+void printPaddedMatrix1d(float *m, string name, int N, int paddedWidth);
+
+
+void printMatrix2(float *m, string name, int r,int c);
+size_t OOPS_align_bytes(size_t bytes);
+int roundUpToMultiple(int number, int multiple);
+int luRowDistribution(int N, int plEngines, int *rowsPerPlEngine);
+
 // Global variable storing device info
 struct cl_interface{
    cl::Context context;
@@ -54,22 +70,6 @@ extern cl_interface program_interface;
 
 typedef float ValueType;
 
-// #if CU == 1
-//    #define nstripe 1
-// #elif CU == 2
-//    #define nstripe 2
-// #elif CU == 4
-//    #define nstripe 4
-// #elif CU == 8
-//    #define nstripe 8
-// #elif CU == 10
-//    #define nstripe 10
-// #elif CU == 16
-//    #define nstripe 16
-// #elif CU == 28
-//    #define nstripe 28
-// #elif CU == 30
-//    #define nstripe 30
-// #endif
+
 
 

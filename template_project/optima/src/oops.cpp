@@ -152,3 +152,141 @@ int OOPS_Hpacked_triMtx_end_idx(int N, int VDATA_SIZE, int row){
 	int end_row_idx = start_row_idx + row_blks - 1;
 	return end_row_idx;
 }
+
+void printMatrix1d(float *m, string name, int N) {
+
+	for (int i=0;i<N;i++) {
+		printf("%08f\t",m[i]);
+	}
+	std::cout << std::endl;
+}
+
+void printMatrix(float *m, string name, int N) {
+
+	for (int i=0;i<N;i++) {
+		for (int j=0;j<N;j++) {
+			printf("%08f\t",m[i*N+j]);
+		}
+		std::cout << std::endl;
+	}
+}
+
+int rowDistribution(int N, int plEngines, int *rowsPerPlEngine) {
+	int peRows = 0, lastPeRows = 0, rowsDiff = 0, maxRows = 0;
+
+	memset(&rowsPerPlEngine[0],0,plEngines*sizeof(int));
+
+	peRows = (int)(floor((float)N / (float)plEngines));
+	lastPeRows = N - (plEngines-1)*peRows;
+
+	for (int i=0;i<plEngines-1;i++) {
+		rowsPerPlEngine[i] = peRows;
+	}
+	rowsPerPlEngine[plEngines-1] = lastPeRows;
+
+	rowsDiff = lastPeRows - peRows;
+
+	if (rowsDiff > 0) {
+		lastPeRows = lastPeRows - rowsDiff;
+		rowsPerPlEngine[plEngines-1] = lastPeRows;
+
+		for (int i=0;i<rowsDiff;i++) {
+			rowsPerPlEngine[i]++;
+		}
+	}
+
+	for (int i=0;i<plEngines;i++) {
+		if (maxRows < rowsPerPlEngine[i]) {
+			maxRows = rowsPerPlEngine[i];
+		}
+	}
+	return maxRows;
+}
+
+size_t OOPS_align_bytes(size_t bytesToAlign) {
+	int rem = bytesToAlign % 64;
+	return (rem == 0) ? bytesToAlign : bytesToAlign + 64 - rem;
+}
+
+int roundUpToMultiple(int number, int multiple){
+	int rem = number % multiple;
+	return (rem == 0) ? number : number + multiple - rem;
+}
+
+
+
+
+
+void printPaddedMatrix1d(float *m, string name, int N, int paddedWidth) {
+	std::cout << "LU: " << name << std::endl;
+	for (int i=0;i<N;i++) {
+		if (i%paddedWidth == 0) {
+			printf("\n");
+		}
+		printf("%08f\t",m[i]);
+	}
+	std::cout << std::endl;
+}
+
+//NOT TESTED!
+void printDiagPaddedMatrix(float *m, string name, int N, int vdt) {
+	std::cout << "LU: " << name << std::endl;
+	int tmpPaddedLineSize = 0, tmpNextLineStartIdx = 0, tmpNextLineEndIdx = 0;
+
+	for (int i=N-1;i>=0;i--) {
+		tmpPaddedLineSize = roundUpToMultiple(i,vdt);
+		tmpNextLineEndIdx = tmpNextLineStartIdx + tmpPaddedLineSize-1;
+
+		for (int j=tmpNextLineStartIdx;j<tmpNextLineEndIdx;j++) {
+			printf("%08f\t",m[j]);
+		}
+		std::cout << std::endl;
+
+		tmpNextLineStartIdx = tmpNextLineStartIdx + tmpPaddedLineSize;
+	}
+}
+
+
+int luRowDistribution(int N, int plEngines, int *rowsPerPlEngine) {
+	int peRows = 0, lastPeRows = 0, rowsDiff = 0, maxRows = 0;
+
+	memset(&rowsPerPlEngine[0],0,plEngines*sizeof(int));
+
+	peRows = (int)(floor((float)N / (float)plEngines));
+	lastPeRows = N - (plEngines-1)*peRows;
+
+	for (int i=0;i<plEngines-1;i++) {
+		rowsPerPlEngine[i] = peRows;
+	}
+	rowsPerPlEngine[plEngines-1] = lastPeRows;
+
+	rowsDiff = lastPeRows - peRows;
+
+	if (rowsDiff > 0) {
+		lastPeRows = lastPeRows - rowsDiff;
+		rowsPerPlEngine[plEngines-1] = lastPeRows;
+
+		for (int i=0;i<rowsDiff;i++) {
+			rowsPerPlEngine[i]++;
+		}
+	}
+
+	for (int i=0;i<plEngines;i++) {
+		if (maxRows < rowsPerPlEngine[i]) {
+			maxRows = rowsPerPlEngine[i];
+		}
+	}
+
+	return maxRows;
+
+}
+
+void printMatrix2(float *m, string name, int r, int c) {
+	std::cout << "LU: " << name << "(" << r << "x" << c << ")" << std::endl;
+	for (int i=0;i<r;i++) {
+		for (int j=0;j<c;j++) {
+			printf("%08f\t",m[i*c+j]);
+		}
+		std::cout << std::endl;
+	}
+}

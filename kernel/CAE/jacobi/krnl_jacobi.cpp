@@ -1,6 +1,6 @@
 #include <hls_math.h>
-#include "../include/global.hpp"
-#include "../include/common.hpp"
+#include "global.hpp"
+#include "common.hpp"
 
 inline void write_vector_wide_jacobi(v_dt* out, hls::stream<v_dt>& Xtemp,const int N) {
 	v_dt X;

@@ -1,281 +1,5 @@
-inline int read_vector_wide_lu(v_dt* in, hls::stream<v_dt>& inStream,const int N, const int start) {
-	unsigned int vSize = ((N - 1) / VDATA_SIZE) + 1;
-
-mem_rd_1:
-    for (int i = 0; i < vSize; i++) {
-	#pragma HLS pipeline II=1
-	#pragma HLS loop_tripcount min=1 max=512
-
-        inStream << in[i+start];
-    }
-
-    return 0;
-}
-
-inline int read_vector_wide_lu_df(v_dt* in, hls::stream<v_dt>& inStream,const int N, const int start) {
-	unsigned int vSize = ((N - 1) / VDATA_SIZE) + 1;
-
-mem_rd_1_df:
-    for (int i = 0; i < vSize; i++) {
-	#pragma HLS pipeline II=1
-	#pragma HLS loop_tripcount min=1 max=512
-
-        inStream << in[i+start];
-    }
-
-    return 0;
-}
-
-inline void read_vector_wide_in_float_bram2d_lu(v_dt* in, float bram[LU_BRAM_DEPTH][VDATA_SIZE],const int N, const int start) {
-	unsigned int vSize = ((N - 1) / VDATA_SIZE) + 1;
-
-mem_rd_2:
-    for (int i = 0; i < vSize; i++) {
-	#pragma HLS pipeline II=1
-	#pragma HLS loop_tripcount min=1 max=512
-
-        for (int j=0;j<VDATA_SIZE;j++) {
-			#pragma HLS unroll
-        	bram[i][j] = in[i+start].data[j];
-        }
-    }
-}
-
-inline void read_vector_wide_in_float_bram2d_lu_12(v_dt* in, v_dt* bram,const int N, const int start) {
-	unsigned int vSize = ((N - 1) / VDATA_SIZE) + 1;
-	v_dt tmpData;
-	#pragma HLS array_partition variable=tmpData type=complete dim=1
-
-mem_rd_2b:
-    for (int i = 0; i < vSize; i++) {
-	#pragma HLS pipeline II=1
-	#pragma HLS loop_tripcount min=1 max=512
-
-    	tmpData = in[i+start];
-
-        for (int j=0;j<VDATA_SIZE;j++) {
-			#pragma HLS unroll
-        	bram[i].data[j] = tmpData.data[j];
-        }
-    }
-}
-
-inline void store_stream_wide_in_float_bram2d_lu(hls::stream<v_dt>& inStream, float bram[LU_BRAM_DEPTH][VDATA_SIZE],const int N) {
-	unsigned int vSize = ((N - 1) / VDATA_SIZE) + 1;
-
-mem_rd_3:
-    for (int i = 0; i < vSize; i++) {
-	#pragma HLS pipeline II=1
-	#pragma HLS loop_tripcount min=1 max=512
-
-    	v_dt tmpData = inStream.read();
-
-        for (int j=0;j<VDATA_SIZE;j++) {
-			#pragma HLS unroll
-        	bram[i][j] = tmpData.data[j];
-        }
-    }
-}
-
-inline void broadcast_vector_wide_in_4float_bram2d_lu(v_dt* in, float bram0[LU_BRAM_DEPTH][VDATA_SIZE], float bram1[LU_BRAM_DEPTH][VDATA_SIZE], float bram2[LU_BRAM_DEPTH][VDATA_SIZE], float bram3[LU_BRAM_DEPTH][VDATA_SIZE],const int N, const int start) {
-	unsigned int vSize = ((N - 1) / VDATA_SIZE) + 1;
-
-mem_rd_4:
-
-    for (int i = 0; i < vSize; i++) {
-	#pragma HLS pipeline II=1
-	#pragma HLS loop_tripcount min=1 max=512
-
-        for (int j=0;j<VDATA_SIZE;j++) {
-			#pragma HLS unroll
-        	bram0[i][j] = in[i+start].data[j];
-        	bram1[i][j] = in[i+start].data[j];
-        	bram2[i][j] = in[i+start].data[j];
-        	bram3[i][j] = in[i+start].data[j];
-        }
-    }
-}
-
-inline void broadcast_vector_wide_in_2float_bram2d_lu(v_dt* in, float bram0[LU_BRAM_DEPTH][VDATA_SIZE], float bram1[LU_BRAM_DEPTH][VDATA_SIZE],const int N, const int start) {
-	unsigned int vSize = ((N - 1) / VDATA_SIZE) + 1;
-
-mem_rd_5:
-
-    for (int i = 0; i < vSize; i++) {
-	#pragma HLS pipeline II=1
-	#pragma HLS loop_tripcount min=1 max=512
-
-        for (int j=0;j<VDATA_SIZE;j++) {
-			#pragma HLS unroll
-        	bram0[i][j] = in[i+start].data[j];
-        	bram1[i][j] = in[i+start].data[j];
-        }
-    }
-}
-
-inline void write_vector_wide_from_float_bram2d_lu(v_dt* out, float bram[LU_BRAM_DEPTH][VDATA_SIZE],const int N, const int start) {
-	unsigned int vSize = ((N - 1) / VDATA_SIZE) + 1;
-
-mem_wr_1:
-    for (int i = 0; i < vSize; i++) {
-	#pragma HLS pipeline II=1
-	#pragma HLS loop_tripcount min=1 max=512
-
-        for (int j=0;j<VDATA_SIZE;j++) {
-			#pragma HLS unroll
-        	out[i+start].data[j] = bram[i][j];
-        }
-    }
-}
-
-inline void write_vector_wide_from_float_bram1d_lu(v_dt* out, float bram[LU_LROWS_BRAM],const int N, const int start) {
-	unsigned int vSize = ((N - 1) / VDATA_SIZE) + 1;
-
-mem_wr_2:
-    for (int i = 0; i < vSize; i++) {
-	#pragma HLS pipeline II=1
-	#pragma HLS loop_tripcount min=1 max=512
-
-        for (int j=0;j<VDATA_SIZE;j++) {
-			#pragma HLS unroll
-        	out[i+start].data[j] = bram[i*VDATA_SIZE+j];
-        }
-    }
-}
-
-inline int write_vector_wide_to_output_and_bram2d_lu(v_dt* out, hls::stream<v_dt>& outStream,float bram[LU_BRAM_DEPTH][VDATA_SIZE],const int N,const int start) {
-	unsigned int vSize = ((N - 1) / VDATA_SIZE) + 1;
-	v_dt tmpData;
-
-mem_wr_3:
-    for (int i = 0; i < vSize; i++) {
-		#pragma HLS pipeline II=1
-
-    	tmpData = outStream.read();
-
-        out[i+start] = tmpData;
-        for (int j=0;j<VDATA_SIZE;j++) {
-			#pragma HLS unroll
-			bram[i][j] = tmpData.data[j];
-		}
-    }
-
-	return 0;
-}
-
-inline int write_vector_wide_to_output_and_bram2d_lu_12(v_dt* out, hls::stream<v_dt>& outStream,v_dt* bram,const int N,const int start) {
-	unsigned int vSize = ((N - 1) / VDATA_SIZE) + 1;
-	v_dt tmpData;
-	#pragma HLS array_partition variable=tmpData type=complete dim=1
-
-mem_wr_3b:
-    for (int i = 0; i < vSize; i++) {
-		#pragma HLS pipeline II=1
-
-    	tmpData = outStream.read();
-
-        for (int j=0;j<VDATA_SIZE;j++) {
-			#pragma HLS unroll
-			bram[i].data[j] = tmpData.data[j];
-		}
-
-        out[i+start] = tmpData;
-    }
-
-	return 0;
-}
-
-inline int write_vector_wide_lu(v_dt* out, hls::stream<v_dt>& outStream,const int N,const int start) {
-	unsigned int vSize = ((N - 1) / VDATA_SIZE) + 1;
-	v_dt tmpData;
-
-mem_wr_4:
-    for (int i = 0; i < vSize; i++) {
-	#pragma HLS pipeline II=1
-
-    	tmpData = outStream.read();
-        out[i+start] = tmpData;
-    }
-
-	return 0;
-}
-
-inline int write_vector_wide_lu_df(v_dt* out, hls::stream<v_dt>& outStream,const int N,const int start) {
-	unsigned int vSize = ((N - 1) / VDATA_SIZE) + 1;
-	v_dt tmpData;
-
-mem_wr_4_df:
-    for (int i = 0; i < vSize; i++) {
-	#pragma HLS pipeline II=1
-
-    	tmpData = outStream.read();
-
-        out[i+start] = tmpData;
-    }
-
-	return 0;
-}
-
-inline int write_wide_float_stream_lu(v_dt* out, hls::stream<float>& outStream,const int N,const int start) {
-	unsigned int vSize = ((N - 1) / VDATA_SIZE) + 1;
-
-	v_dt tmpData;
-	#pragma HLS array_partition variable=tmpData type=complete dim=1
-
-mem_wr_5:
-    for (int i = 0; i < vSize; i++) {
-    	for (int j=0;j<VDATA_SIZE;j++) {
-		#pragma HLS pipeline II=1
-		//#pragma HLS latency max=3
-    		if (i*VDATA_SIZE+j < N) {
-    			tmpData.data[j] = outStream.read();
-    		}
-    		else {
-    			tmpData.data[j] = 0.0f;
-    		}
-    	}
-
-    	out[i+start] = tmpData;
-    }
-
-    return 0;
-}
-
-inline int write_vector_wide_out_and_to_buffer_lu(v_dt* out, v_dt* offChipBuf, hls::stream<v_dt>& outStream,const int N,const int outStart,const int bufStart) {
-	unsigned int vSize = ((N - 1) / VDATA_SIZE) + 1;
-	static v_dt tmpData;
-
-mem_wr_7:
-    for (int i = 0; i < vSize; i++) {
-	#pragma HLS pipeline II=1
-
-    	tmpData = outStream.read();
-
-    	offChipBuf[i+bufStart] = tmpData;
-        out[i+outStart] = tmpData;
-    }
-
-	return 0;
-}
-
-inline int write_vector_wide_out_and_to_stream_lu(v_dt* out, hls::stream<v_dt>& bufStream, hls::stream<v_dt>& outStream,const int N,const int outStart) {
-	unsigned int vSize = ((N - 1) / VDATA_SIZE) + 1;
-	static v_dt tmpData;
-
-mem_wr_8:
-    for (int i = 0; i < vSize; i++) {
-	#pragma HLS pipeline II=1
-
-    	tmpData = outStream.read();
-
-    	bufStream.write(tmpData);
-        out[i+outStart] = tmpData;
-    }
-
-	return 0;
-}
-
-
+#include "global.hpp"
+#include "common.hpp"
 
 inline int lu_write_last_snapshot_line(v_dt* out, hls::stream<v_dt>& outStream,const int N,const int start, bool writeLine) {
 	unsigned int vSize = ((N - 1) / VDATA_SIZE) + 1;
@@ -546,7 +270,7 @@ inline void lu_update_L(int c, v_dt* SLRows0Out, hls::stream<float>& LRowsStream
 
 #ifndef __SYNTHESIS__
 	printf("lu_update_L: (c=%d): must write %d elements, padded to %d elements..\n",c,totalProcessedRows,tmpPaddedTotalProcessedRows);
-	printf("lu_update_L: (c=%d): write_wide_float_stream_lu %d elements to SLRows0Out[%d]..\n",c,tmpPaddedTotalProcessedRows,*SLRows0OutStartIdx/VDATA_SIZE);
+	printf("lu_update_L: (c=%d): write_wide_float_stream_lu %d elements to SLRowsXOut[%d]..\n",c,tmpPaddedTotalProcessedRows,*SLRows0OutStartIdx/VDATA_SIZE);
 #endif
 
 	write_wide_float_stream_lu(SLRows0Out,LRowsStream,totalProcessedRows,*SLRows0OutStartIdx/VDATA_SIZE);
@@ -591,6 +315,155 @@ inline void lu_update_row_boundaries(
 #endif
 }
 
+inline void dfUpdateL5(
+		int c, int N, int*SLRows0OutStartIdx, int*SLRows1OutStartIdx, int*SLRows2OutStartIdx, int*SLRows3OutStartIdx, int*SLRows4OutStartIdx,
+		v_dt* SLRows0Out, v_dt* SLRows1Out, v_dt* SLRows2Out, v_dt* SLRows3Out, v_dt* SLRows4Out,
+		hls::stream<float>& LRowsStreamA, hls::stream<float>& LRowsStreamB, hls::stream<float>& LRowsStreamC, hls::stream<float>& LRowsStreamD, hls::stream<float>& LRowsStreamE
+	) {
+	#pragma HLS dataflow
+
+	int cA = c, cB = c+1, cC = c+2, cD = c+3, cE = c+4;
+	int NcA = N-c-1, NcB = N-c-2, NcC = N-c-3, NcD = N-c-4, NcE = N-c-5;
+
+	lu_update_L(cA,SLRows0Out,LRowsStreamA,SLRows0OutStartIdx,NcA);
+	lu_update_L(cB,SLRows1Out,LRowsStreamB,SLRows1OutStartIdx,NcB);
+	lu_update_L(cC,SLRows2Out,LRowsStreamC,SLRows2OutStartIdx,NcC);
+	lu_update_L(cD,SLRows3Out,LRowsStreamD,SLRows3OutStartIdx,NcD);
+	lu_update_L(cE,SLRows4Out,LRowsStreamE,SLRows4OutStartIdx,NcE);
+}
+
+inline void dfUpdateL4(
+		int c, int N, int*SLRows0OutStartIdx, int*SLRows1OutStartIdx, int*SLRows2OutStartIdx, int*SLRows3OutStartIdx,
+		v_dt* SLRows0Out, v_dt* SLRows1Out, v_dt* SLRows2Out, v_dt* SLRows3Out,
+		hls::stream<float>& LRowsStreamA, hls::stream<float>& LRowsStreamB, hls::stream<float>& LRowsStreamC, hls::stream<float>& LRowsStreamD
+	) {
+	#pragma HLS dataflow
+
+	int cA = c, cB = c+1, cC = c+2, cD = c+3;
+	int NcA = N-c-1, NcB = N-c-2, NcC = N-c-3, NcD = N-c-4;
+
+	lu_update_L(cA,SLRows0Out,LRowsStreamA,SLRows0OutStartIdx,NcA);
+	lu_update_L(cB,SLRows1Out,LRowsStreamB,SLRows1OutStartIdx,NcB);
+	lu_update_L(cC,SLRows2Out,LRowsStreamC,SLRows2OutStartIdx,NcC);
+	lu_update_L(cD,SLRows3Out,LRowsStreamD,SLRows3OutStartIdx,NcD);
+}
+
+inline void dfUpdateL3(
+		int c, int N, int*SLRows0OutStartIdx, int*SLRows1OutStartIdx, int*SLRows2OutStartIdx,
+		v_dt* SLRows0Out, v_dt* SLRows1Out, v_dt* SLRows2Out,
+		hls::stream<float>& LRowsStreamA, hls::stream<float>& LRowsStreamB, hls::stream<float>& LRowsStreamC
+	) {
+	#pragma HLS dataflow
+
+	int cA = c, cB = c+1, cC = c+2;
+	int NcA = N-c-1, NcB = N-c-2, NcC = N-c-3;
+
+	lu_update_L(cA,SLRows0Out,LRowsStreamA,SLRows0OutStartIdx,NcA);
+	lu_update_L(cB,SLRows1Out,LRowsStreamB,SLRows1OutStartIdx,NcB);
+	lu_update_L(cC,SLRows2Out,LRowsStreamC,SLRows2OutStartIdx,NcC);
+}
+
+/*inline void dfUpdateL2(
+		int c, int N, int*SLRows0OutStartIdx, int*SLRows1OutStartIdx,
+		v_dt* SLRows0Out, v_dt* SLRows1Out,
+		hls::stream<float>& LRowsStreamA, hls::stream<float>& LRowsStreamB
+	) {
+	#pragma HLS dataflow
+
+	int cA = c, cB = c+1;
+	int NcA = N-c-1, NcB = N-c-2;
+
+	lu_update_L(cA,SLRows0Out,LRowsStreamA,SLRows0OutStartIdx,NcA);
+	lu_update_L(cB,SLRows1Out,LRowsStreamB,SLRows1OutStartIdx,NcB);
+}*/
+
+inline void dfLine4(
+		int *inputRowIdx, int c, int *SURows0OutStartIdx,
+		int iterPaddedRowWidth, int iterVdtsPerRow,
+		int iterVdtsPerRow_2,
+		int iterVdtsPerRow_3,
+		int iterVdtsPerRow_4,
+		int iterVdtsPerRow_5, int HBMBufferElemNumToWrite_5,
+		v_dt *SURowsHBMBufferRd, v_dt *SURowsHBMBufferWr, v_dt *mybram, v_dt *SURows0Out, v_dt *mybram_2, v_dt *mybram_3, v_dt *mybram_4, v_dt *mybram_5,
+		bool kernelNotLastRound,
+		bool appendLastResults, bool appendLastResults_2, bool appendLastResults_3, bool appendLastResults_4, bool appendLastResults_5,
+		hls::stream<float>& LRowsStreamA, hls::stream<float>& LRowsStreamB, hls::stream<float>& LRowsStreamC, hls::stream<float>& LRowsStreamD, hls::stream<float>& LRowsStreamE
+	) {
+	#pragma HLS dataflow
+
+	static hls::stream<v_dt> URowsStreamRd("URowsStreamRd");
+	#pragma HLS STREAM variable = URowsStreamRd depth = 64
+
+	static hls::stream<v_dt> URowsStreamTmp("URowsStreamTmp");
+	#pragma HLS STREAM variable = URowsStreamTmp depth = 64
+
+	static hls::stream<v_dt> URowsStreamTmp2("URowsStreamTmp2");
+	#pragma HLS STREAM variable = URowsStreamTmp2 depth = 64
+
+	static hls::stream<v_dt> URowsStreamTmp3("URowsStreamTmp3");
+	#pragma HLS STREAM variable = URowsStreamTmp3 depth = 64
+
+	static hls::stream<v_dt> URowsStreamTmp4("URowsStreamTmp4");
+	#pragma HLS STREAM variable = URowsStreamTmp4 depth = 64
+
+	static hls::stream<v_dt> URowsStreamWr("URowsStreamWr");
+	#pragma HLS STREAM variable = URowsStreamWr depth = 64
+
+	static hls::stream<v_dt> URowsOutStream("URowsOutStream");
+	#pragma HLS STREAM variable = URowsOutStream depth = 64
+
+	int readVectorStartDf = (*inputRowIdx)*iterVdtsPerRow;
+	int writeVectorStartDf = (*SURows0OutStartIdx)/VDATA_SIZE;
+	int secondProcC = c+1, thirdProcC = c+2, fourthProcC = c+3, fifthProcC = c+4;
+
+
+#ifndef __SYNTHESIS__
+	printf("dfLine4: 20. (c=%d): READ BUFFER (%d elements) SURowsHBMBufferRd[%d] ==> URowsStreamRd..\n",c,iterPaddedRowWidth,(*inputRowIdx));
+#endif
+	read_vector_wide_lu(SURowsHBMBufferRd,URowsStreamRd,iterPaddedRowWidth,readVectorStartDf);
+
+#ifndef __SYNTHESIS__
+	printf("dfLine4: 21. (c=%d): lu_short_auxiliary_process_array_snapshot_row URowsStreamRd => URowsStreamTmp, LRowsStreamA..\n",c);
+#endif
+	//1st process of next row (sends results from URowsStream -> URowsStreamTmp, LRowsStreamA!)
+	lu_short_auxiliary_process_array_snapshot_row(c,iterVdtsPerRow,appendLastResults,mybram,URowsStreamRd,URowsStreamTmp,LRowsStreamA);
+
+#ifndef __SYNTHESIS__
+	printf("dfLine4: 22. (c=%d): lu_short_auxiliary_process_array_snapshot_row URowsStreamTmp => URowsStreamTmp2, LRowsStreamB..\n",c);
+#endif
+	//2nd process of next row (sends results from URowsStreamTmp -> URowsStreamTmp2, LRowsStreamB!)
+	lu_short_auxiliary_process_array_snapshot_row(secondProcC,iterVdtsPerRow_2,appendLastResults_2,mybram_2,URowsStreamTmp,URowsStreamTmp2,LRowsStreamB);
+
+#ifndef __SYNTHESIS__
+	printf("dfLine4: 23. (c=%d): lu_short_auxiliary_process_array_snapshot_row URowsStreamTmp2 => URowsStreamTmp3, LRowsStreamC..\n",c);
+#endif
+	//3rd process of next row (sends results from URowsStreamTmp2 -> URowsStreamTmp3, LRowsStreamC!)
+	lu_short_auxiliary_process_array_snapshot_row(thirdProcC,iterVdtsPerRow_3,appendLastResults_3,mybram_3,URowsStreamTmp2,URowsStreamTmp3,LRowsStreamC);
+
+#ifndef __SYNTHESIS__
+	printf("dfLine4: 24. (c=%d): lu_short_auxiliary_process_array_snapshot_row URowsStreamTmp3 => URowsStreamTmp4, LRowsStreamD..\n",c);
+#endif
+	//4th process of next row (sends results from URowsStreamTmp3 -> URowsStreamTmp4, LRowsStreamD!)
+	lu_short_auxiliary_process_array_snapshot_row(fourthProcC,iterVdtsPerRow_4,appendLastResults_4,mybram_4,URowsStreamTmp3,URowsStreamTmp4,LRowsStreamD);
+
+#ifndef __SYNTHESIS__
+	printf("dfLine4: 25. (c=%d): lu_process_array_snapshot_row URowsStreamTmp4 => URowsOutStream, URowsStream2, LRowsStreamE..\n",c);
+#endif
+	//5th process of next row (sends results from URowsStreamTmp4 -> URowsOutStream, LRowsStreamE, URowsStreamWr!)
+	lu_process_array_snapshot_row(fifthProcC,iterVdtsPerRow_5,kernelNotLastRound,true,appendLastResults_5,mybram_5,URowsStreamTmp4,URowsStreamWr,URowsOutStream,LRowsStreamE);
+
+#ifndef __SYNTHESIS__
+	printf("dfLine4: 26. (c=%d): WRITE OUT appendLastResults = %d, (%d elements) URowsOutStream ==> SURows0Out[%d]..\n",c,appendLastResults_5,HBMBufferElemNumToWrite_5,(*SURows0OutStartIdx)/(iterVdtsPerRow_5*VDATA_SIZE));
+#endif
+	write_vector_wide_lu(SURows0Out,URowsOutStream,HBMBufferElemNumToWrite_5,writeVectorStartDf);
+
+	//write new row back also SURowsHBMBufferWr
+#ifndef __SYNTHESIS__
+	printf("dfLine4: 27. (c=%d): WRITE BUFFER (%d elements) URowsStreamWr ==> SURowsHBMBufferWr[0]..\n",c,HBMBufferElemNumToWrite_5);
+#endif
+	lu_write_last_snapshot_line(SURowsHBMBufferWr,URowsStreamWr,HBMBufferElemNumToWrite_5,0,kernelNotLastRound);
+}
+
 
 inline void dfLine3(
 		int *inputRowIdx, int c, int *SURows0OutStartIdx,
@@ -598,7 +471,7 @@ inline void dfLine3(
 		int iterVdtsPerRow_2,
 		int iterVdtsPerRow_3,
 		int iterVdtsPerRow_4, int HBMBufferElemNumToWrite_4,
-		v_dt *SURowsHBMBufferRd, v_dt *SURowsHBMBufferWr, v_dt *mybram, v_dt *SURows0Out, v_dt *mybram_2, v_dt *mybram_3, v_dt *mybram_4,
+		v_dt *SURowsHBMBufferRd, v_dt *mybram, v_dt *SURows0Out, v_dt *mybram_2, v_dt *mybram_3, v_dt *mybram_4, v_dt *mybram_5,
 		bool kernelNotLastRound,
 		bool appendLastResults, bool appendLastResults_2, bool appendLastResults_3, bool appendLastResults_4,
 		hls::stream<float>& LRowsStreamA, hls::stream<float>& LRowsStreamB, hls::stream<float>& LRowsStreamC, hls::stream<float>& LRowsStreamD
@@ -653,20 +526,14 @@ inline void dfLine3(
 #ifndef __SYNTHESIS__
 	printf("dfLine3: 18. (c=%d): lu_process_array_snapshot_row URowsStreamTmp3 => URowsOutStream, URowsStreamWr, LRowsStreamD..\n",c);
 #endif
-	//4th process of next row (sends results from URowsStreamTmp3 -> URowsOutStream, LRowsStreamD, URowsStreamWr!)
-	lu_process_array_snapshot_row(fourthProcC,iterVdtsPerRow_4,kernelNotLastRound,true,appendLastResults_4,mybram_4,URowsStreamTmp3,URowsStreamWr,URowsOutStream,LRowsStreamD);
+	//4th process of next row (sends results from URowsStreamTmp3 -> URowsOutStream, LRowsStreamD, does not update URowsStreamWr!)
+	lu_process_array_snapshot_row(fourthProcC,iterVdtsPerRow_4,kernelNotLastRound,false,appendLastResults_4,mybram_4,URowsStreamTmp3,URowsStreamWr,URowsOutStream,LRowsStreamD);
 
+	//write new row back to SURows0Out and also cache it to the 5th bram as 5th pivot row
 #ifndef __SYNTHESIS__
-	printf("dfLine3: 19. (c=%d): WRITE OUT appendLastResults = %d, (%d elements) URowsOutStream ==> SURows0Out[%d]..\n",c,appendLastResults_4,HBMBufferElemNumToWrite_4,(*SURows0OutStartIdx)/(iterVdtsPerRow_4*VDATA_SIZE));
+	printf("dfLine3: 19. (c=%d): WRITE OUT AND CACHE appendLastResults = %d, (%d elements) URowsOutStream ==> SURows0Out[%d], cache 5..\n",c,appendLastResults_4,HBMBufferElemNumToWrite_4,(*SURows0OutStartIdx)/(iterVdtsPerRow_4*VDATA_SIZE));
 #endif
-	write_vector_wide_lu(SURows0Out,URowsOutStream,HBMBufferElemNumToWrite_4,writeVectorStartDf);
-
-	//write new row back also SURowsHBMBufferWr
-#ifndef __SYNTHESIS__
-	printf("dfLine3: 20. (c=%d): WRITE BUFFER (%d elements) URowsStreamWr ==> SURowsHBMBufferWr[0]..\n",c,HBMBufferElemNumToWrite_4);
-#endif
-	//write_vector_wide_lu(SURowsHBMBufferWr,URowsStreamWr,HBMBufferElemNumToWrite_4,0);
-	lu_write_last_snapshot_line(SURowsHBMBufferWr,URowsStreamWr,HBMBufferElemNumToWrite_4,0,kernelNotLastRound);
+	write_vector_wide_to_output_and_bram2d_lu_12(SURows0Out,URowsOutStream,mybram_5,HBMBufferElemNumToWrite_4,writeVectorStartDf);
 
 }
 
@@ -694,7 +561,7 @@ inline void dfLine2(
 	#pragma HLS STREAM variable = URowsStreamTmp2 depth = 64
 
 	static hls::stream<v_dt> URowsStreamWr("URowsStreamWr");
-	#pragma HLS STREAM variable = URowsStreamWr depth = 1
+	#pragma HLS STREAM variable = URowsStreamWr depth = 64
 
 	static hls::stream<v_dt> URowsOutStream("URowsOutStream");
 	#pragma HLS STREAM variable = URowsOutStream depth = 64
@@ -750,7 +617,7 @@ inline void dfLine1(
 	#pragma HLS STREAM variable = URowsStreamTmp depth = 64
 
 	static hls::stream<v_dt> URowsStreamWr("URowsStreamWr");
-	#pragma HLS STREAM variable = URowsStreamWr depth = 1
+	#pragma HLS STREAM variable = URowsStreamWr depth = 64
 
 	static hls::stream<v_dt> URowsOutStream("URowsOutStream");
 	#pragma HLS STREAM variable = URowsOutStream depth = 64
@@ -797,7 +664,7 @@ inline void dfLine0(
 	#pragma HLS STREAM variable = URowsStreamRd depth = 64
 
 	static hls::stream<v_dt> URowsStreamWr("URowsStreamWr");
-	#pragma HLS STREAM variable = URowsStreamWr depth = 1
+	#pragma HLS STREAM variable = URowsStreamWr depth = 64
 
 	static hls::stream<v_dt> URowsOutStream("URowsOutStream");
 	#pragma HLS STREAM variable = URowsOutStream depth = 64
@@ -825,13 +692,13 @@ inline void dfLine0(
 }
 
 inline void dfUpdateRowBoundaries(
-		int remRows, int remRows_2, int remRows_3, int remRows_4,
-		int *lastVdtElements, int *lastVdtElements_2, int *lastVdtElements_3, int *lastVdtElements_4,
-		int *iterPaddedRowWidth, int *iterPaddedRowWidth_2, int *iterPaddedRowWidth_3, int *iterPaddedRowWidth_4,
-		int *iterRowsElementsPadded, int *iterRowsElementsPadded_2, int *iterRowsElementsPadded_3, int *iterRowsElementsPadded_4,
-		int *iterVdtsPerRow, int *iterVdtsPerRow_2, int *iterVdtsPerRow_3, int *iterVdtsPerRow_4,
-		int *HBMBufferElemNumToWrite, int *HBMBufferElemNumToWrite_2, int *HBMBufferElemNumToWrite_3, int *HBMBufferElemNumToWrite_4,
-		bool *appendLastResults, bool *appendLastResults_2, bool *appendLastResults_3, bool *appendLastResults_4
+		int remRows, int remRows_2, int remRows_3, int remRows_4, int remRows_5,
+		int *lastVdtElements, int *lastVdtElements_2, int *lastVdtElements_3, int *lastVdtElements_4, int *lastVdtElements_5,
+		int *iterPaddedRowWidth, int *iterPaddedRowWidth_2, int *iterPaddedRowWidth_3, int *iterPaddedRowWidth_4, int *iterPaddedRowWidth_5,
+		int *iterRowsElementsPadded, int *iterRowsElementsPadded_2, int *iterRowsElementsPadded_3, int *iterRowsElementsPadded_4, int *iterRowsElementsPadded_5,
+		int *iterVdtsPerRow, int *iterVdtsPerRow_2, int *iterVdtsPerRow_3, int *iterVdtsPerRow_4, int *iterVdtsPerRow_5,
+		int *HBMBufferElemNumToWrite, int *HBMBufferElemNumToWrite_2, int *HBMBufferElemNumToWrite_3, int *HBMBufferElemNumToWrite_4, int *HBMBufferElemNumToWrite_5,
+		bool *appendLastResults, bool *appendLastResults_2, bool *appendLastResults_3, bool *appendLastResults_4, bool *appendLastResults_5
 	) {
 	#pragma HLS dataflow
 
@@ -839,6 +706,7 @@ inline void dfUpdateRowBoundaries(
 	lu_update_row_boundaries(remRows_2,lastVdtElements_2,iterPaddedRowWidth_2,iterRowsElementsPadded_2,iterVdtsPerRow_2,HBMBufferElemNumToWrite_2,appendLastResults_2);
 	lu_update_row_boundaries(remRows_3,lastVdtElements_3,iterPaddedRowWidth_3,iterRowsElementsPadded_3,iterVdtsPerRow_3,HBMBufferElemNumToWrite_3,appendLastResults_3);
 	lu_update_row_boundaries(remRows_4,lastVdtElements_4,iterPaddedRowWidth_4,iterRowsElementsPadded_4,iterVdtsPerRow_4,HBMBufferElemNumToWrite_4,appendLastResults_4);
+	lu_update_row_boundaries(remRows_5,lastVdtElements_5,iterPaddedRowWidth_5,iterRowsElementsPadded_5,iterVdtsPerRow_5,HBMBufferElemNumToWrite_5,appendLastResults_5);
 
 }
 
@@ -846,25 +714,28 @@ inline void dfUpdateRowBoundaries(
 inline void dfLoop(
 		v_dt* SURowsHBMBufferRd, v_dt* SURowsHBMBufferWr,
 		int i, int inputRowIdx, int c, int iterVdtsPerRow, int iterPaddedRowWidth,
-		int iterVdtsPerRow_2, int iterPaddedRowWidth_2,
-		int iterVdtsPerRow_3, int iterPaddedRowWidth_3,
+		int iterVdtsPerRow_2, int HBMBufferElemNumToWrite_2, int iterPaddedRowWidth_2,
+		int iterVdtsPerRow_3, int HBMBufferElemNumToWrite_3, int iterPaddedRowWidth_3,
 		int iterVdtsPerRow_4, int HBMBufferElemNumToWrite_4, int iterPaddedRowWidth_4,
-		bool appendLastResults, bool appendLastResults_2, bool appendLastResults_3, bool appendLastResults_4,
-		hls::stream<float>& LRowsStreamA, hls::stream<float>& LRowsStreamB, hls::stream<float>& LRowsStreamC, hls::stream<float>& LRowsStreamD,
-		v_dt* mybram,v_dt* mybram_2,v_dt* mybram_3,v_dt* mybram_4
+		int iterVdtsPerRow_5, int HBMBufferElemNumToWrite_5, int iterPaddedRowWidth_5,
+		bool appendLastResults, bool appendLastResults_2, bool appendLastResults_3, bool appendLastResults_4, bool appendLastResults_5,
+		hls::stream<float>& LRowsStreamA, hls::stream<float>& LRowsStreamB, hls::stream<float>& LRowsStreamC, hls::stream<float>& LRowsStreamD, hls::stream<float>& LRowsStreamE,
+		v_dt* mybram,v_dt* mybram_2,v_dt* mybram_3,v_dt* mybram_4,v_dt* mybram_5
 	) {
 	#pragma HLS dataflow
 
 	static hls::stream<v_dt> URowsStreamRdDf("URowsStreamRdDf");
-	#pragma HLS STREAM variable = URowsStreamRdDf depth = 128
+	#pragma HLS STREAM variable = URowsStreamRdDf depth = 64
 	static hls::stream<v_dt> URowsStreamTmpDf("URowsStreamTmpDf");
-	#pragma HLS STREAM variable = URowsStreamTmpDf depth = 128
+	#pragma HLS STREAM variable = URowsStreamTmpDf depth = 64
 	static hls::stream<v_dt> URowsStreamTmpDf2("URowsStreamTmpDf2");
-	#pragma HLS STREAM variable = URowsStreamTmpDf2 depth = 128
+	#pragma HLS STREAM variable = URowsStreamTmpDf2 depth = 64
 	static hls::stream<v_dt> URowsStreamTmpDf3("URowsStreamTmpDf3");
-	#pragma HLS STREAM variable = URowsStreamTmpDf3 depth = 128
+	#pragma HLS STREAM variable = URowsStreamTmpDf3 depth = 64
+	static hls::stream<v_dt> URowsStreamTmpDf4("URowsStreamTmpDf4");
+	#pragma HLS STREAM variable = URowsStreamTmpDf4 depth = 64
 	static hls::stream<v_dt> URowsStreamWrDf("URowsStreamWrDf");
-	#pragma HLS STREAM variable = URowsStreamWrDf depth = 128
+	#pragma HLS STREAM variable = URowsStreamWrDf depth = 64
 
 	int iDf = inputRowIdx, cDf = c, iterVdtsPerRowDf = iterVdtsPerRow;
 	int iterPaddedRowWidthDf = iterPaddedRowWidth;
@@ -872,12 +743,14 @@ inline void dfLoop(
 	int iDf_2 = inputRowIdx, cDf_2 = c+1, iterVdtsPerRowDf_2 = iterVdtsPerRow_2;
 	int iDf_3 = inputRowIdx, cDf_3 = c+2, iterVdtsPerRowDf_3 = iterVdtsPerRow_3;
 	int iDf_4 = inputRowIdx, cDf_4 = c+3, iterVdtsPerRowDf_4 = iterVdtsPerRow_4;
-	int iterPaddedRowWidthDf_2 = iterPaddedRowWidth_2;
-	int iterPaddedRowWidthDf_3 = iterPaddedRowWidth_3;
+	int iDf_5 = inputRowIdx, cDf_5 = c+4, iterVdtsPerRowDf_5 = iterVdtsPerRow_5;
+	int HBMBufferElemNumToWriteDf_2 = HBMBufferElemNumToWrite_2, iterPaddedRowWidthDf_2 = iterPaddedRowWidth_2;
+	int HBMBufferElemNumToWriteDf_3 = HBMBufferElemNumToWrite_3, iterPaddedRowWidthDf_3 = iterPaddedRowWidth_3;
 	int HBMBufferElemNumToWriteDf_4 = HBMBufferElemNumToWrite_4, iterPaddedRowWidthDf_4 = iterPaddedRowWidth_4;
-	bool appendLastResultsDf_2 = appendLastResults_2, appendLastResultsDf_3 = appendLastResults_3, appendLastResultsDf_4 = appendLastResults_4;
+	int HBMBufferElemNumToWriteDf_5 = HBMBufferElemNumToWrite_5, iterPaddedRowWidthDf_5 = iterPaddedRowWidth_5;
+	bool appendLastResultsDf_2 = appendLastResults_2, appendLastResultsDf_3 = appendLastResults_3, appendLastResultsDf_4 = appendLastResults_4, appendLastResultsDf_5 = appendLastResults_5;
 
-	int tmpHBMBufferStartIdx = (i+1)*HBMBufferElemNumToWriteDf_4;
+	int tmpHBMBufferStartIdx = (i+1)*HBMBufferElemNumToWriteDf_5;
 	int readVectorStartDf = (i+iDf)*iterVdtsPerRowDf;
 	int writeVectorStartDf = tmpHBMBufferStartIdx/VDATA_SIZE;
 
@@ -909,25 +782,35 @@ inline void dfLoop(
 #ifndef __SYNTHESIS__
 	printf("DF5. (c=%d): lu_short_auxiliary_process_array_snapshot_row_df..\n",c);
 #endif
-	//4th process of next row (sends results from URowsStreamTmpDf3 -> URowsStreamWrDf, LRowsStream_D!)
-	lu_short_auxiliary_process_array_snapshot_row(cDf_4,iterVdtsPerRowDf_4,appendLastResults_4,mybram_4,URowsStreamTmpDf3,URowsStreamWrDf,LRowsStreamD);
+	//4th process of next row (sends results from URowsStreamTmpDf3 -> URowsStreamTmpDf4, LRowsStream_D!)
+	lu_short_auxiliary_process_array_snapshot_row(cDf_4,iterVdtsPerRowDf_4,appendLastResults_4,mybram_4,URowsStreamTmpDf3,URowsStreamTmpDf4,LRowsStreamD);
+
+#ifndef __SYNTHESIS__
+	printf("DF6. (c=%d): lu_short_auxiliary_process_array_snapshot_row_df..\n",c);
+#endif
+	//5th process of next row (sends results from URowsStreamTmpDf4 -> URowsStreamWrDf, LRowsStream_E!)
+	lu_short_auxiliary_process_array_snapshot_row(cDf_5,iterVdtsPerRowDf_5,appendLastResults_5,mybram_5,URowsStreamTmpDf4,URowsStreamWrDf,LRowsStreamE);
 
 	//write new row back to SURowsHBMBufferWr
 #ifndef __SYNTHESIS__
-	printf("DF6. (c=%d): appendLastResults = %d, WRITE BUFFER (%d elements) URowsStreamWrDf ==> SURowsHBMBufferWr[%d]\n",c,appendLastResultsDf_4,HBMBufferElemNumToWriteDf_4,tmpHBMBufferStartIdx/(iterVdtsPerRowDf_4*VDATA_SIZE));
+	printf("DF7. (c=%d): appendLastResults = %d, WRITE BUFFER (%d elements) URowsStreamWrDf ==> SURowsHBMBufferWr[%d]\n",c,appendLastResultsDf_5,HBMBufferElemNumToWriteDf_5,tmpHBMBufferStartIdx/(iterVdtsPerRowDf_5*VDATA_SIZE));
 #endif
-	write_vector_wide_lu(SURowsHBMBufferWr,URowsStreamWrDf,HBMBufferElemNumToWriteDf_4,writeVectorStartDf);
+	write_vector_wide_lu(SURowsHBMBufferWr,URowsStreamWrDf,HBMBufferElemNumToWriteDf_5,writeVectorStartDf);
 }
 
 extern "C" {
-	void krnl_lu3d14df(
-			const int N,v_dt* SURows0Out,v_dt* SLRows0Out,v_dt* SURowsHBMBuffer,v_dt* SURowsHBMBuffer2
+	void krnl_lu(
+			const int N,v_dt* SURows0Out,v_dt* SLRows0Out,v_dt* SLRows1Out,v_dt* SLRows2Out,v_dt* SLRows3Out,v_dt* SLRows4Out,v_dt* SURowsHBMBuffer,v_dt* SURowsHBMBuffer2
 	) {
 		#pragma HLS INTERFACE s_axilite port = N
 		#pragma HLS INTERFACE m_axi port = SURows0Out offset = slave bundle = hbm0
 		#pragma HLS INTERFACE m_axi port = SLRows0Out offset = slave bundle = hbm1
-		#pragma HLS INTERFACE m_axi port = SURowsHBMBuffer offset = slave bundle = hbm2
-		#pragma HLS INTERFACE m_axi port = SURowsHBMBuffer2 offset = slave bundle = hbm3
+		#pragma HLS INTERFACE m_axi port = SLRows1Out offset = slave bundle = hbm2
+		#pragma HLS INTERFACE m_axi port = SLRows2Out offset = slave bundle = hbm3
+		#pragma HLS INTERFACE m_axi port = SLRows3Out offset = slave bundle = hbm4
+		#pragma HLS INTERFACE m_axi port = SLRows4Out offset = slave bundle = hbm5
+		#pragma HLS INTERFACE m_axi port = SURowsHBMBuffer offset = slave bundle = hbm6
+		#pragma HLS INTERFACE m_axi port = SURowsHBMBuffer2 offset = slave bundle = hbm7
 
 		static v_dt mybram[LU_BRAM_DEPTH];  //stores the pivot row
 		#pragma HLS array_partition variable=mybram type=complete dim=2
@@ -941,6 +824,9 @@ extern "C" {
 		static v_dt mybram_4[LU_BRAM_DEPTH];  //stores the 4th pivot row
 		#pragma HLS array_partition variable=mybram_4 type=complete dim=2
 
+		static v_dt mybram_5[LU_BRAM_DEPTH];  //stores the 5th pivot row
+		#pragma HLS array_partition variable=mybram_5 type=complete dim=2
+
 		static hls::stream<float> LRowsStream("LRowsStream");
 		#pragma HLS STREAM variable = LRowsStream depth = 12288
 		static hls::stream<float> LRowsStream_2("LRowsStream_2");
@@ -949,6 +835,8 @@ extern "C" {
 		#pragma HLS STREAM variable = LRowsStream_3 depth = 12288
 		static hls::stream<float> LRowsStream_4("LRowsStream_4");
 		#pragma HLS STREAM variable = LRowsStream_4 depth = 12288
+		static hls::stream<float> LRowsStream_5("LRowsStream_5");
+		#pragma HLS STREAM variable = LRowsStream_5 depth = 12288
 
 		static int inputRowIdx = 0;
 		static int c = 0;  //iterates through N (outer iteration)
@@ -985,15 +873,24 @@ extern "C" {
 		static int HBMBufferElemNumToWrite_4 = 0;
 		static bool appendLastResults_4 = false;
 
+		static int remRows_5 = 0;  //remaining rows
+		static int lastVdtElements_5 = 0;  //number of valid elements in each row's last vdt
+		static int iterPaddedRowWidth_5 = 0;  //padded row width for an iteration
+		static int iterRowsElementsPadded_5 = 0;  //number of SURows elements, including padding
+		static int iterVdtsPerRow_5 = 0;  //number of vdts per row including padding
+		static int HBMBufferElemNumToWrite_5 = 0;
+		static bool appendLastResults_5 = false;
+
 		static bool kernelLastRow = false;  //designates if the last row is about to be processed
 		static bool kernelLast2Rows = false;  //designates if the last 2 rows are about to be processed
 		static bool kernelLast3Rows = false;  //designates if the last 3 rows are about to be processed
 		static bool kernelLast4Rows = false;  //designates if the last 4 rows are about to be processed
+		static bool kernelLast5Rows = false;  //designates if the last 5 rows are about to be processed
 
-		static bool kernelNotLastRound = true;
 		static bool switchPipeline = false;
+		static bool kernelNotLastRound = true;
 
-		static int SLRows0OutStartIdx = 0;
+		static int SLRows0OutStartIdx = 0, SLRows1OutStartIdx = 0, SLRows2OutStartIdx = 0, SLRows3OutStartIdx = 0, SLRows4OutStartIdx = 0;
 		static int SURows0OutStartIdx = 0;
 
 
@@ -1002,40 +899,41 @@ register_and_bram_initialization:
 		#pragma HLS pipeline II=1
 			for (int j=0;j<VDATA_SIZE;j++) {
 			#pragma HLS unroll
-				mybram[i].data[j] = 0.0f; mybram_2[i].data[j] = 0.0f; mybram_3[i].data[j] = 0.0f; mybram_4[i].data[j] = 0.0f;
+				mybram[i].data[j] = 0.0f; mybram_2[i].data[j] = 0.0f; mybram_3[i].data[j] = 0.0f; mybram_4[i].data[j] = 0.0f; mybram_5[i].data[j] = 0.0f;
 			}
 		}
 
 		kernelLastRow = false; appendLastResults = false;
-		c = 0; lastVdtElements = 0; remRows = 0; iterVdtsPerRow = 0; iterPaddedRowWidth = 0; SLRows0OutStartIdx = 0; SURows0OutStartIdx = 0;
+		c = 0; lastVdtElements = 0; remRows = 0; iterVdtsPerRow = 0; iterPaddedRowWidth = 0;
+		SLRows0OutStartIdx = 0; SLRows1OutStartIdx = 0; SLRows2OutStartIdx = 0; SLRows3OutStartIdx = 0; SLRows4OutStartIdx = 0; SURows0OutStartIdx = 0;
 		HBMBufferElemNumToWrite = 0;
 		switchPipeline = false;
 
 data_processing:
-		for (c=0;c<N-1;c+=4) {
-			HBMBufferElemNumToWrite = 0; HBMBufferElemNumToWrite_2 = 0; HBMBufferElemNumToWrite_3 = 0; HBMBufferElemNumToWrite_4 = 0;
-			lastVdtElements = 0; lastVdtElements_2 = 0; lastVdtElements_3 = 0; lastVdtElements_4 = 0;
-			iterRowsElementsPadded = 0; iterRowsElementsPadded_2 = 0; iterRowsElementsPadded_3 = 0; iterRowsElementsPadded_4 = 0;
+		for (c=0;c<N-1;c+=5) {
+			HBMBufferElemNumToWrite = 0; HBMBufferElemNumToWrite_2 = 0; HBMBufferElemNumToWrite_3 = 0; HBMBufferElemNumToWrite_4 = 0; HBMBufferElemNumToWrite_5 = 0;
+			lastVdtElements = 0; lastVdtElements_2 = 0; lastVdtElements_3 = 0; lastVdtElements_4 = 0;; lastVdtElements_5 = 0;
+			iterRowsElementsPadded = 0; iterRowsElementsPadded_2 = 0; iterRowsElementsPadded_3 = 0; iterRowsElementsPadded_4 = 0; iterRowsElementsPadded_5 = 0;
 			inputRowIdx = 0;
-			kernelLastRow = (c==N-2); kernelLast2Rows = (c==N-3); kernelLast3Rows = (c==N-4); kernelLast4Rows = (c==N-5);
-			kernelNotLastRound = (!kernelLastRow) && (!kernelLast2Rows) && (!kernelLast3Rows) && (!kernelLast4Rows);
+			kernelLastRow = (c==N-2); kernelLast2Rows = (c==N-3); kernelLast3Rows = (c==N-4); kernelLast4Rows = (c==N-5); kernelLast5Rows = (c==N-6);
+			kernelNotLastRound = (!kernelLastRow) && (!kernelLast2Rows) && (!kernelLast3Rows) && (!kernelLast4Rows) && (!kernelLast5Rows);
 
 			//keeps how many rows still remain to be processed, INCLUDING the pivot row
-			remRows = N-c; remRows_2 = N-c-1; remRows_3 = N-c-2; remRows_4 = N-c-3;
+			remRows = N-c; remRows_2 = N-c-1; remRows_3 = N-c-2; remRows_4 = N-c-3; remRows_5 = N-c-4;
 
 #ifndef __SYNTHESIS__
-			printf("START ======> (c=%d): kernelNotLastRound = %d, kernelLastRow=%d, kernelLast2Rows=%d, kernelLast3Rows=%d, kernelLast4Rows=%d\n",c,kernelNotLastRound,kernelLastRow,kernelLast2Rows,kernelLast3Rows,kernelLast4Rows);
-			printf("START ======> (c=%d): remRows=%d, remRows_2=%d, remRows_3=%d, remRows_4=%d\n",c,remRows,remRows_2,remRows_3,remRows_4);
+			printf("START ======> (c=%d): kernelNotLastRound = %d, kernelLastRow=%d, kernelLast2Rows=%d, kernelLast3Rows=%d, kernelLast4Rows=%d, kernelLast5Rows=%d\n",c,kernelNotLastRound,kernelLastRow,kernelLast2Rows,kernelLast3Rows,kernelLast4Rows,kernelLast5Rows);
+			printf("START ======> (c=%d): remRows=%d, remRows_2=%d, remRows_3=%d, remRows_4=%d, remRows_5=%d\n",c,remRows,remRows_2,remRows_3,remRows_4,remRows_5);
 #endif
 
 			dfUpdateRowBoundaries(
-				remRows,remRows_2,remRows_3,remRows_4,
-				&lastVdtElements,&lastVdtElements_2,&lastVdtElements_3,&lastVdtElements_4,
-				&iterPaddedRowWidth,&iterPaddedRowWidth_2,&iterPaddedRowWidth_3,&iterPaddedRowWidth_4,
-				&iterRowsElementsPadded,&iterRowsElementsPadded_2,&iterRowsElementsPadded_3,&iterRowsElementsPadded_4,
-				&iterVdtsPerRow,&iterVdtsPerRow_2,&iterVdtsPerRow_3,&iterVdtsPerRow_4,
-				&HBMBufferElemNumToWrite,&HBMBufferElemNumToWrite_2,&HBMBufferElemNumToWrite_3,&HBMBufferElemNumToWrite_4,
-				&appendLastResults,&appendLastResults_2,&appendLastResults_3,&appendLastResults_4
+				remRows,remRows_2,remRows_3,remRows_4,remRows_5,
+				&lastVdtElements,&lastVdtElements_2,&lastVdtElements_3,&lastVdtElements_4,&lastVdtElements_5,
+				&iterPaddedRowWidth,&iterPaddedRowWidth_2,&iterPaddedRowWidth_3,&iterPaddedRowWidth_4,&iterPaddedRowWidth_5,
+				&iterRowsElementsPadded,&iterRowsElementsPadded_2,&iterRowsElementsPadded_3,&iterRowsElementsPadded_4,&iterRowsElementsPadded_5,
+				&iterVdtsPerRow,&iterVdtsPerRow_2,&iterVdtsPerRow_3,&iterVdtsPerRow_4,&iterVdtsPerRow_5,
+				&HBMBufferElemNumToWrite,&HBMBufferElemNumToWrite_2,&HBMBufferElemNumToWrite_3,&HBMBufferElemNumToWrite_4,&HBMBufferElemNumToWrite_5,
+				&appendLastResults,&appendLastResults_2,&appendLastResults_3,&appendLastResults_4,&appendLastResults_5
 			);
 
 			if (!switchPipeline) {
@@ -1085,7 +983,12 @@ data_processing:
 					printf("(c=%d): kernelLast2Rows = %d, done! :)\n",c,kernelLast2Rows);
 #endif
 					lu_update_L(c,SLRows0Out,LRowsStream,&SLRows0OutStartIdx,N-c-1);
-					lu_update_L(c+1,SLRows0Out,LRowsStream_2,&SLRows0OutStartIdx,N-c-2);
+					lu_update_L(c+1,SLRows1Out,LRowsStream_2,&SLRows1OutStartIdx,N-c-2);
+					/*dfUpdateL2(
+						c,N,&SLRows0OutStartIdx,&SLRows1OutStartIdx,
+						SLRows0Out,SLRows1Out,
+						LRowsStream,LRowsStream_2
+					);*/
 					continue;
 				}
 
@@ -1107,9 +1010,14 @@ data_processing:
 #ifndef __SYNTHESIS__
 					printf("(c=%d): kernelLast3Rows = %d, done! :)\n",c,kernelLast3Rows);
 #endif
-					lu_update_L(c,SLRows0Out,LRowsStream,&SLRows0OutStartIdx,N-c-1);
-					lu_update_L(c+1,SLRows0Out,LRowsStream_2,&SLRows0OutStartIdx,N-c-2);
-					lu_update_L(c+2,SLRows0Out,LRowsStream_3,&SLRows0OutStartIdx,N-c-3);
+					/*lu_update_L(c,SLRows0Out,LRowsStream,&SLRows0OutStartIdx,N-c-1);
+					lu_update_L(c+1,SLRows1Out,LRowsStream_2,&SLRows1OutStartIdx,N-c-2);
+					lu_update_L(c+2,SLRows2Out,LRowsStream_3,&SLRows2OutStartIdx,N-c-3);*/
+					dfUpdateL3(
+						c,N,&SLRows0OutStartIdx,&SLRows1OutStartIdx,&SLRows2OutStartIdx,
+						SLRows0Out,SLRows1Out,SLRows2Out,
+						LRowsStream,LRowsStream_2,LRowsStream_3
+					);
 					continue;
 				}
 
@@ -1119,7 +1027,7 @@ data_processing:
 					iterVdtsPerRow_2,
 					iterVdtsPerRow_3,
 					iterVdtsPerRow_4,HBMBufferElemNumToWrite_4,
-					SURowsHBMBuffer,SURowsHBMBuffer2,mybram,SURows0Out,mybram_2,mybram_3,mybram_4,
+					SURowsHBMBuffer,mybram,SURows0Out,mybram_2,mybram_3,mybram_4,mybram_5,
 					kernelNotLastRound,
 					appendLastResults,appendLastResults_2,appendLastResults_3,appendLastResults_4,
 					LRowsStream,LRowsStream_2,LRowsStream_3,LRowsStream_4
@@ -1132,14 +1040,52 @@ data_processing:
 #ifndef __SYNTHESIS__
 					printf("(c=%d): kernelLast4Rows = %d, done! :)\n",c,kernelLast4Rows);
 #endif
-					lu_update_L(c,SLRows0Out,LRowsStream,&SLRows0OutStartIdx,N-c-1);
-					lu_update_L(c+1,SLRows0Out,LRowsStream_2,&SLRows0OutStartIdx,N-c-2);
-					lu_update_L(c+2,SLRows0Out,LRowsStream_3,&SLRows0OutStartIdx,N-c-3);
-					lu_update_L(c+3,SLRows0Out,LRowsStream_4,&SLRows0OutStartIdx,N-c-4);
+					/*lu_update_L(c,SLRows0Out,LRowsStream,&SLRows0OutStartIdx,N-c-1);
+					lu_update_L(c+1,SLRows1Out,LRowsStream_2,&SLRows1OutStartIdx,N-c-2);
+					lu_update_L(c+2,SLRows2Out,LRowsStream_3,&SLRows2OutStartIdx,N-c-3);
+					lu_update_L(c+3,SLRows3Out,LRowsStream_4,&SLRows3OutStartIdx,N-c-4);*/
+					dfUpdateL4(
+						c,N,&SLRows0OutStartIdx,&SLRows1OutStartIdx,&SLRows2OutStartIdx,&SLRows3OutStartIdx,
+						SLRows0Out,SLRows1Out,SLRows2Out,SLRows3Out,
+						LRowsStream,LRowsStream_2,LRowsStream_3,LRowsStream_4
+					);
 					continue;
 				}
 
-				remRows-=5;  //subtract 5 rows that have already been processed
+				dfLine4(
+					&inputRowIdx,c,&SURows0OutStartIdx,
+					iterPaddedRowWidth,iterVdtsPerRow,
+					iterVdtsPerRow_2,
+					iterVdtsPerRow_3,
+					iterVdtsPerRow_4,
+					iterVdtsPerRow_5,HBMBufferElemNumToWrite_5,
+					SURowsHBMBuffer,SURowsHBMBuffer2,mybram,SURows0Out,mybram_2,mybram_3,mybram_4,mybram_5,
+					kernelNotLastRound,
+					appendLastResults,appendLastResults_2,appendLastResults_3,appendLastResults_4,appendLastResults_5,
+					LRowsStream,LRowsStream_2,LRowsStream_3,LRowsStream_4,LRowsStream_5
+				);
+
+				inputRowIdx+=1;
+				SURows0OutStartIdx+=HBMBufferElemNumToWrite_5;
+
+				if (kernelLast5Rows) {  //at this point processing is done
+#ifndef __SYNTHESIS__
+					printf("(c=%d): kernelLast5Rows = %d, done! :)\n",c,kernelLast5Rows);
+#endif
+					/*lu_update_L(c,SLRows0Out,LRowsStream,&SLRows0OutStartIdx,N-c-1);
+					lu_update_L(c+1,SLRows1Out,LRowsStream_2,&SLRows1OutStartIdx,N-c-2);
+					lu_update_L(c+2,SLRows2Out,LRowsStream_3,&SLRows2OutStartIdx,N-c-3);
+					lu_update_L(c+3,SLRows3Out,LRowsStream_4,&SLRows3OutStartIdx,N-c-4);
+					lu_update_L(c+4,SLRows4Out,LRowsStream_5,&SLRows4OutStartIdx,N-c-5);*/
+					dfUpdateL5(
+						c,N,&SLRows0OutStartIdx,&SLRows1OutStartIdx,&SLRows2OutStartIdx,&SLRows3OutStartIdx,&SLRows4OutStartIdx,
+						SLRows0Out,SLRows1Out,SLRows2Out,SLRows3Out,SLRows4Out,
+						LRowsStream,LRowsStream_2,LRowsStream_3,LRowsStream_4,LRowsStream_5
+					);
+					continue;
+				}
+
+				remRows-=6;  //subtract 6 rows that have already been processed
 
 				int remRowsDf = remRows;
 #ifndef __SYNTHESIS__
@@ -1152,18 +1098,25 @@ data_processing:
 					dfLoop(
 						SURowsHBMBuffer,SURowsHBMBuffer2,
 						i,inputRowIdx,c,iterVdtsPerRow,iterPaddedRowWidth,
-						iterVdtsPerRow_2,iterPaddedRowWidth_2,
-						iterVdtsPerRow_3,iterPaddedRowWidth_3,
+						iterVdtsPerRow_2,HBMBufferElemNumToWrite_2,iterPaddedRowWidth_2,
+						iterVdtsPerRow_3,HBMBufferElemNumToWrite_3,iterPaddedRowWidth_3,
 						iterVdtsPerRow_4,HBMBufferElemNumToWrite_4,iterPaddedRowWidth_4,
-						appendLastResults,appendLastResults_2,appendLastResults_3,appendLastResults_4,
-						LRowsStream,LRowsStream_2,LRowsStream_3,LRowsStream_4,
-						mybram,mybram_2,mybram_3,mybram_4
+						iterVdtsPerRow_5,HBMBufferElemNumToWrite_5,iterPaddedRowWidth_5,
+						appendLastResults,appendLastResults_2,appendLastResults_3,appendLastResults_4,appendLastResults_5,
+						LRowsStream,LRowsStream_2,LRowsStream_3,LRowsStream_4,LRowsStream_5,
+						mybram,mybram_2,mybram_3,mybram_4,mybram_5
 					);
 				}
-				lu_update_L(c,SLRows0Out,LRowsStream,&SLRows0OutStartIdx,N-c-1);
-				lu_update_L(c+1,SLRows0Out,LRowsStream_2,&SLRows0OutStartIdx,N-c-2);
-				lu_update_L(c+2,SLRows0Out,LRowsStream_3,&SLRows0OutStartIdx,N-c-3);
-				lu_update_L(c+3,SLRows0Out,LRowsStream_4,&SLRows0OutStartIdx,N-c-4);
+				/*lu_update_L(c,SLRows0Out,LRowsStream,&SLRows0OutStartIdx,N-c-1);
+				lu_update_L(c+1,SLRows1Out,LRowsStream_2,&SLRows1OutStartIdx,N-c-2);
+				lu_update_L(c+2,SLRows2Out,LRowsStream_3,&SLRows2OutStartIdx,N-c-3);
+				lu_update_L(c+3,SLRows3Out,LRowsStream_4,&SLRows3OutStartIdx,N-c-4);
+				lu_update_L(c+4,SLRows4Out,LRowsStream_5,&SLRows4OutStartIdx,N-c-5);*/
+				dfUpdateL5(
+					c,N,&SLRows0OutStartIdx,&SLRows1OutStartIdx,&SLRows2OutStartIdx,&SLRows3OutStartIdx,&SLRows4OutStartIdx,
+					SLRows0Out,SLRows1Out,SLRows2Out,SLRows3Out,SLRows4Out,
+					LRowsStream,LRowsStream_2,LRowsStream_3,LRowsStream_4,LRowsStream_5
+				);
 			}
 			else {  //switchPipeline = true
 				switchPipeline = false;
@@ -1181,7 +1134,7 @@ data_processing:
 					SURowsHBMBuffer2,mybram,SURows0Out,mybram_2,
 					kernelNotLastRound,
 					appendLastResults,
-					LRowsStream_4
+					LRowsStream_5
 				);
 				inputRowIdx+=1;
 				SURows0OutStartIdx+=HBMBufferElemNumToWrite;
@@ -1190,7 +1143,7 @@ data_processing:
 #ifndef __SYNTHESIS__
 					printf("(c=%d): kernelLastRow = %d, done! :)\n",c,kernelLastRow);
 #endif
-					lu_update_L(c,SLRows0Out,LRowsStream_4,&SLRows0OutStartIdx,N-c-1);
+					lu_update_L(c,SLRows0Out,LRowsStream_5,&SLRows0OutStartIdx,N-c-1);
 					continue;
 				}
 
@@ -1201,7 +1154,7 @@ data_processing:
 					SURowsHBMBuffer2,mybram,SURows0Out,mybram_2,mybram_3,
 					kernelNotLastRound,
 					appendLastResults,appendLastResults_2,
-					LRowsStream_4,LRowsStream
+					LRowsStream_5,LRowsStream
 				);
 
 				inputRowIdx+=1;
@@ -1211,8 +1164,13 @@ data_processing:
 #ifndef __SYNTHESIS__
 					printf("(c=%d): kernelLast2Rows = %d, done! :)\n",c,kernelLast2Rows);
 #endif
-					lu_update_L(c,SLRows0Out,LRowsStream_4,&SLRows0OutStartIdx,N-c-1);
-					lu_update_L(c+1,SLRows0Out,LRowsStream,&SLRows0OutStartIdx,N-c-2);
+					lu_update_L(c,SLRows0Out,LRowsStream_5,&SLRows0OutStartIdx,N-c-1);
+					lu_update_L(c+1,SLRows1Out,LRowsStream,&SLRows1OutStartIdx,N-c-2);
+					/*dfUpdateL2(
+						c,N,&SLRows0OutStartIdx,&SLRows1OutStartIdx,
+						SLRows0Out,SLRows1Out,
+						LRowsStream_5,LRowsStream
+					);*/
 					continue;
 				}
 
@@ -1224,7 +1182,7 @@ data_processing:
 					SURowsHBMBuffer2,mybram,SURows0Out,mybram_2,mybram_3,mybram_4,
 					kernelNotLastRound,
 					appendLastResults,appendLastResults_2,appendLastResults_3,
-					LRowsStream_4,LRowsStream,LRowsStream_2
+					LRowsStream_5,LRowsStream,LRowsStream_2
 				);
 
 				inputRowIdx+=1;
@@ -1234,9 +1192,14 @@ data_processing:
 #ifndef __SYNTHESIS__
 					printf("(c=%d): kernelLast3Rows = %d, done! :)\n",c,kernelLast3Rows);
 #endif
-					lu_update_L(c,SLRows0Out,LRowsStream_4,&SLRows0OutStartIdx,N-c-1);
-					lu_update_L(c+1,SLRows0Out,LRowsStream,&SLRows0OutStartIdx,N-c-2);
-					lu_update_L(c+2,SLRows0Out,LRowsStream_2,&SLRows0OutStartIdx,N-c-3);
+					/*lu_update_L(c,SLRows0Out,LRowsStream_5,&SLRows0OutStartIdx,N-c-1);
+					lu_update_L(c+1,SLRows1Out,LRowsStream,&SLRows1OutStartIdx,N-c-2);
+					lu_update_L(c+2,SLRows2Out,LRowsStream_2,&SLRows2OutStartIdx,N-c-3);*/
+					dfUpdateL3(
+						c,N,&SLRows0OutStartIdx,&SLRows1OutStartIdx,&SLRows2OutStartIdx,
+						SLRows0Out,SLRows1Out,SLRows2Out,
+						LRowsStream_5,LRowsStream,LRowsStream_2
+					);
 					continue;
 				}
 
@@ -1246,10 +1209,10 @@ data_processing:
 					iterVdtsPerRow_2,
 					iterVdtsPerRow_3,
 					iterVdtsPerRow_4,HBMBufferElemNumToWrite_4,
-					SURowsHBMBuffer2,SURowsHBMBuffer,mybram,SURows0Out,mybram_2,mybram_3,mybram_4,
+					SURowsHBMBuffer2,mybram,SURows0Out,mybram_2,mybram_3,mybram_4,mybram_5,
 					kernelNotLastRound,
 					appendLastResults,appendLastResults_2,appendLastResults_3,appendLastResults_4,
-					LRowsStream_4,LRowsStream,LRowsStream_2,LRowsStream_3
+					LRowsStream_5,LRowsStream,LRowsStream_2,LRowsStream_3
 				);
 
 				inputRowIdx+=1;
@@ -1259,14 +1222,52 @@ data_processing:
 #ifndef __SYNTHESIS__
 					printf("(c=%d): kernelLast4Rows = %d, done! :)\n",c,kernelLast4Rows);
 #endif
-					lu_update_L(c,SLRows0Out,LRowsStream_4,&SLRows0OutStartIdx,N-c-1);
-					lu_update_L(c+1,SLRows0Out,LRowsStream,&SLRows0OutStartIdx,N-c-2);
-					lu_update_L(c+2,SLRows0Out,LRowsStream_2,&SLRows0OutStartIdx,N-c-3);
-					lu_update_L(c+3,SLRows0Out,LRowsStream_3,&SLRows0OutStartIdx,N-c-4);
+					/*lu_update_L(c,SLRows0Out,LRowsStream_5,&SLRows0OutStartIdx,N-c-1);
+					lu_update_L(c+1,SLRows1Out,LRowsStream,&SLRows1OutStartIdx,N-c-2);
+					lu_update_L(c+2,SLRows2Out,LRowsStream_2,&SLRows2OutStartIdx,N-c-3);
+					lu_update_L(c+3,SLRows3Out,LRowsStream_3,&SLRows3OutStartIdx,N-c-4);*/
+					dfUpdateL4(
+						c,N,&SLRows0OutStartIdx,&SLRows1OutStartIdx,&SLRows2OutStartIdx,&SLRows3OutStartIdx,
+						SLRows0Out,SLRows1Out,SLRows2Out,SLRows3Out,
+						LRowsStream_5,LRowsStream,LRowsStream_2,LRowsStream_3
+					);
 					continue;
 				}
 
-				remRows-=5;  //subtract 5 rows that have already been processed
+				dfLine4(
+					&inputRowIdx,c,&SURows0OutStartIdx,
+					iterPaddedRowWidth,iterVdtsPerRow,
+					iterVdtsPerRow_2,
+					iterVdtsPerRow_3,
+					iterVdtsPerRow_4,
+					iterVdtsPerRow_5,HBMBufferElemNumToWrite_5,
+					SURowsHBMBuffer2,SURowsHBMBuffer,mybram,SURows0Out,mybram_2,mybram_3,mybram_4,mybram_5,
+					kernelNotLastRound,
+					appendLastResults,appendLastResults_2,appendLastResults_3,appendLastResults_4,appendLastResults_5,
+					LRowsStream_5,LRowsStream,LRowsStream_2,LRowsStream_3,LRowsStream_4
+				);
+
+				inputRowIdx+=1;
+				SURows0OutStartIdx+=HBMBufferElemNumToWrite_5;
+
+				if (kernelLast5Rows) {  //at this point processing is done
+#ifndef __SYNTHESIS__
+					printf("(c=%d): kernelLast5Rows = %d, done! :)\n",c,kernelLast5Rows);
+#endif
+					/*lu_update_L(c,SLRows0Out,LRowsStream_5,&SLRows0OutStartIdx,N-c-1);
+					lu_update_L(c+1,SLRows1Out,LRowsStream,&SLRows1OutStartIdx,N-c-2);
+					lu_update_L(c+2,SLRows2Out,LRowsStream_2,&SLRows2OutStartIdx,N-c-3);
+					lu_update_L(c+3,SLRows3Out,LRowsStream_3,&SLRows3OutStartIdx,N-c-4);
+					lu_update_L(c+4,SLRows4Out,LRowsStream_4,&SLRows4OutStartIdx,N-c-5);*/
+					dfUpdateL5(
+						c,N,&SLRows0OutStartIdx,&SLRows1OutStartIdx,&SLRows2OutStartIdx,&SLRows3OutStartIdx,&SLRows4OutStartIdx,
+						SLRows0Out,SLRows1Out,SLRows2Out,SLRows3Out,SLRows4Out,
+						LRowsStream_5,LRowsStream,LRowsStream_2,LRowsStream_3,LRowsStream_4
+					);
+					continue;
+				}
+
+				remRows-=6;  //subtract 6 rows that have already been processed
 
 				int remRowsDf = remRows;
 #ifndef __SYNTHESIS__
@@ -1279,18 +1280,25 @@ data_processing:
 					dfLoop(
 						SURowsHBMBuffer2,SURowsHBMBuffer,
 						i,inputRowIdx,c,iterVdtsPerRow,iterPaddedRowWidth,
-						iterVdtsPerRow_2,iterPaddedRowWidth_2,
-						iterVdtsPerRow_3,iterPaddedRowWidth_3,
+						iterVdtsPerRow_2,HBMBufferElemNumToWrite_2,iterPaddedRowWidth_2,
+						iterVdtsPerRow_3,HBMBufferElemNumToWrite_3,iterPaddedRowWidth_3,
 						iterVdtsPerRow_4,HBMBufferElemNumToWrite_4,iterPaddedRowWidth_4,
-						appendLastResults,appendLastResults_2,appendLastResults_3,appendLastResults_4,
-						LRowsStream_4,LRowsStream,LRowsStream_2,LRowsStream_3,
-						mybram,mybram_2,mybram_3,mybram_4
+						iterVdtsPerRow_5,HBMBufferElemNumToWrite_5,iterPaddedRowWidth_5,
+						appendLastResults,appendLastResults_2,appendLastResults_3,appendLastResults_4,appendLastResults_5,
+						LRowsStream_5,LRowsStream,LRowsStream_2,LRowsStream_3,LRowsStream_4,
+						mybram,mybram_2,mybram_3,mybram_4,mybram_5
 					);
 				}
-				lu_update_L(c,SLRows0Out,LRowsStream_4,&SLRows0OutStartIdx,N-c-1);
-				lu_update_L(c+1,SLRows0Out,LRowsStream,&SLRows0OutStartIdx,N-c-2);
-				lu_update_L(c+2,SLRows0Out,LRowsStream_2,&SLRows0OutStartIdx,N-c-3);
-				lu_update_L(c+3,SLRows0Out,LRowsStream_3,&SLRows0OutStartIdx,N-c-4);
+				/*lu_update_L(c,SLRows0Out,LRowsStream_5,&SLRows0OutStartIdx,N-c-1);
+				lu_update_L(c+1,SLRows1Out,LRowsStream,&SLRows1OutStartIdx,N-c-2);
+				lu_update_L(c+2,SLRows2Out,LRowsStream_2,&SLRows2OutStartIdx,N-c-3);
+				lu_update_L(c+3,SLRows3Out,LRowsStream_3,&SLRows3OutStartIdx,N-c-4);
+				lu_update_L(c+4,SLRows4Out,LRowsStream_4,&SLRows4OutStartIdx,N-c-5);*/
+				dfUpdateL5(
+					c,N,&SLRows0OutStartIdx,&SLRows1OutStartIdx,&SLRows2OutStartIdx,&SLRows3OutStartIdx,&SLRows4OutStartIdx,
+					SLRows0Out,SLRows1Out,SLRows2Out,SLRows3Out,SLRows4Out,
+					LRowsStream_5,LRowsStream,LRowsStream_2,LRowsStream_3,LRowsStream_4
+				);
 			}
 		}
 	}
